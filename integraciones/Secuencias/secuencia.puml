@@ -1,0 +1,150 @@
+@startuml "[Code] Integrador Pacas Pro - Bus/Middleware"
+    title "[Code] Integrador Pacas Pro - Bus/Middleware"
+    boundary Pacas_Pro as Pacas_Pro #FEFFDD
+    participant "[Controller:AuthController]" as auth_controller
+    participant "[Service:OAuthClientCredentialsStrategy]" as oauth_client_credentials_strategy
+    participant "[Service:JwtStrategy]" as jwt_strategy
+    participant "[Controller:ForwarderController]" as integrador_controller
+    participant  "[Service:ForwarderRequestUseCase]" as forwarder_request_use_case
+    participant  "[Service:BusinessSatelliteService]" as business_satellite_service
+    participant  "[Service:RequestForwarderService]" as request_forwarder_service
+    participant  "[Service:ConfigResolverService]" as config_resolver_service
+    participant  "[Service:MemcachedCacheService]" as memcached_cache_service   #CBFBFF
+    participant  "[Repository:PostgresRespository] " as postgres_respository   #CBFBFF
+    participant  "[Service:ParameterMappingService]" as parameter_mapping_service
+    boundary  "[Adapter:SatelliteSystemAdapter]" as satellite_system_adapter #FEFFDD
+    participant  "[Service:ResponseHandlerService]" as response_handler_service
+    participant  "[Service:AlertingFirestoreService]" as alerting_firestore_service
+    participant  "[Service:TraceFirestoreService]" as trace_firestore_service
+
+    
+    Pacas_Pro -> auth_controller : Authorize Client: \n /api/v1/generateToken/
+
+    activate Pacas_Pro #FEFFDD
+    activate auth_controller
+    ALT Authorized Client in Middleware
+        auth_controller -> postgres_respository : Get Client Credentials:: getCredentialMiddleware()
+        activate postgres_respository
+        postgres_respository --> auth_controller : Return Client Credentials
+
+        activate oauth_client_credentials_strategy
+        auth_controller -> oauth_client_credentials_strategy : Validate Credentials ::validate()
+        oauth_client_credentials_strategy --> auth_controller : Credenciales validadas
+        deactivate oauth_client_credentials_strategy
+
+        ALT ValidateCredentials is True
+            GROUP Authorization Middleware
+                auth_controller -> auth_controller : Generate Token Middleware
+                auth_controller -> postgres_respository : Save Token Middleware
+                postgres_respository --> auth_controller : Return Token Middleware
+                auth_controller --> Pacas_Pro : Retorna JWT Token
+            END
+
+            Pacas_Pro -> integrador_controller : Ejecuta el endpoint: \n /api/v1/forwader/
+            integrador_controller -> jwt_strategy : Valida el token recibido :: validate()
+            activate jwt_strategy
+            jwt_strategy--> integrador_controller: Token validado
+            deactivate jwt_strategy
+
+            activate integrador_controller
+            integrador_controller -> forwarder_request_use_case : forwarderRequest()
+            activate forwarder_request_use_case
+            forwarder_request_use_case -> business_satellite_service : Delega la autorizacion de los satelites :: findSatelliteToken()
+            activate business_satellite_service
+
+            activate config_resolver_service
+            business_satellite_service -> config_resolver_service : Busca el token del satelite : :: resolveConfig()
+
+            ALT Search Token in Cache
+                config_resolver_service -> memcached_cache_service : Busca en la cache el token del Satelite: \n getToken()
+                activate memcached_cache_service 
+                memcached_cache_service --> config_resolver_service : Retorna Token
+                ' GROUP <font color="red" > Token Expired = TRUE
+                '     config_resolver_service -> satellite_system_adapter : Delega el llamado del Satelite para el GenerateToken: \n sendRequestToSatellite()
+                '     activate satellite_system_adapter #FEFFDD
+                '     satellite_system_adapter --> config_resolver_service : Retorna respuesta del satelite
+                '     config_resolver_service -> memcached_cache_service : Actualiza memcached el token del Satelite
+                '     memcached_cache_service --> config_resolver_service : Retorna Token Actualizado
+                ' END
+            ELSE <font color="red" > ERROR: Token not found in cache
+                config_resolver_service -> postgres_respository : Obtiene las credenciales del satellite de la bd: \n findBusinessSatelliteInDatabase()
+                postgres_respository --> config_resolver_service: Retorna las credenciales del satellite
+                config_resolver_service -> satellite_system_adapter : Delega el llamado del Satelite para el GenerateToken: \n sendRequestToSatellite()
+                satellite_system_adapter --> config_resolver_service : Retorna respuesta del satelite
+                config_resolver_service -> memcached_cache_service : Actualiza memcached el token del Satelite
+                memcached_cache_service --> config_resolver_service : Retorna Token Obtenido
+            END
+            config_resolver_service --> business_satellite_service:  Retorna Token Obtenido
+            deactivate config_resolver_service
+            business_satellite_service --> forwarder_request_use_case : Retorna Token Obtenido
+            deactivate business_satellite_service
+
+            forwarder_request_use_case -> request_forwarder_service: Delega la redireccion de peticiones de los satelites :: forwardRequest()
+
+            activate request_forwarder_service
+            request_forwarder_service -> config_resolver_service : Busca en la bd el endpoint: \n resolveConfig()
+            activate config_resolver_service
+            ALT Recupera datos de cache
+                config_resolver_service -> memcached_cache_service : Recupera datos de la caché: \n findBusinessConectorInMemcached()
+                memcached_cache_service --> config_resolver_service : Retorna datos encontrados
+                
+            ELSE <font color="red" > ERROR: Not found data in caché
+                config_resolver_service -> postgres_respository : Busca datos en la bd: \n findBusinessConectorInDatabase()
+                postgres_respository --> config_resolver_service : Retorna datos  encontrados
+                deactivate postgres_respository
+                config_resolver_service -> memcached_cache_service : Almacena datos en la caché: \n saveBusinessConectorInMemcached()
+                memcached_cache_service --> config_resolver_service : Retorna datos almacenados
+                deactivate memcached_cache_service
+             
+            END
+
+            config_resolver_service --> request_forwarder_service : Retorna datos  encontrados
+            deactivate config_resolver_service
+            request_forwarder_service -> parameter_mapping_service : Envía los datos de entrada para que sean mapeados: \n requestMapping()
+            activate parameter_mapping_service
+            parameter_mapping_service --> request_forwarder_service : Retorna datos  mapeados
+            request_forwarder_service -> satellite_system_adapter : Delega el llamado del satelite: \n sendRequestToSatellite()
+            
+            ALT Fallo debido a token expirado
+                activate business_satellite_service
+                satellite_system_adapter ->  business_satellite_service: Obtener nuevo token del satelite :: getSateliteSystemToken()
+                business_satellite_service --> satellite_system_adapter: Retorna nuevo token del satelite obtenido                
+                satellite_system_adapter -> satellite_system_adapter: Reintenta llamado al satelite con el nuevo token                
+                
+            END
+
+            satellite_system_adapter -> alerting_firestore_service: Guarda alertas :: registerTime()
+            activate alerting_firestore_service
+            deactivate alerting_firestore_service
+
+            satellite_system_adapter -> trace_firestore_service: Guarda traza de la peticion :: saveTrace()
+            activate trace_firestore_service
+            deactivate trace_firestore_service
+
+            satellite_system_adapter --> request_forwarder_service : Retorna respuesta del satelite
+            deactivate satellite_system_adapter
+            request_forwarder_service -> response_handler_service : Envía los datos del respuesta del satelite para que sean procesados antes de su retorno: \n handleResponse()
+            activate response_handler_service
+            response_handler_service -> parameter_mapping_service : Envía los datos de salida para que sean mapeados: \n responseMapping()
+            parameter_mapping_service --> response_handler_service : Retorna datos mapeados
+            deactivate parameter_mapping_service
+            response_handler_service --> request_forwarder_service : Retorna datos procesados
+            deactivate response_handler_service
+            request_forwarder_service --> forwarder_request_use_case : Retorna respuesta del satelite
+            forwarder_request_use_case --> integrador_controller : Retorna respuesta del satelite
+
+            deactivate request_forwarder_service
+            deactivate forwarder_request_use_case
+
+            integrador_controller --> Pacas_Pro : Retorna respuesta del satelite
+            deactivate integrador_controller
+        ELSE <font color="red" > ERROR: ValidateCredentials is False
+            auth_controller --> Pacas_Pro : Invalid Credentials
+        END
+    ELSE  <font color="red" >ERROR: Unauthorized Client 
+        auth_controller --> Pacas_Pro : Cliente No Autorizado
+        deactivate auth_controller
+    END
+    
+ deactivate Pacas_Pro
+@enduml

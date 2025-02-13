@@ -1,0 +1,161 @@
+@startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+skinparam dpi 50
+skinparam pageSize A3
+ 
+package Api {
+    package ContractServiceController{
+        class ContractServiceController {
+            + List(value: string?, idWareHouse: int, page: int, limit: int): IActionResult
+            + ListClients(idCompany: int, value: string?): IActionResult
+            + GetContractServiceById(id: int): IActionResult
+            + ListGeneral(idCompany: int, idWareHouse: int): IActionResult
+            + ListContractForLot(idWarehouse: int, idClient: int, IdProduct: int, state: int): IActionResult
+            + DownloadReportContractService(value: string?, idWareHouse: int): IActionResult
+            + DownloadAttachedFile(id: int): IActionResult
+            + UpdateStateContractService(id: int, idState: int, closeDate: string?): IActionResult
+            + UpdateContractService(id: int, request: FileContractServiceDto): IActionResult
+            + RegisterContractService(model: FileContractServiceDto): IActionResult
+            + Copy(request: ContractServiceCopyDto): IActionResult
+            + ValidateStatus(id: int): IActionResult
+            + Search(request: RequestContractServiceSearchDto, idWareHouse: int, page: int, limit: int): IActionResult
+        }
+    }   
+
+     package ServiceController {
+        class ServiceController {
+            + ListofURols(): IActionResult
+        }
+    }
+
+    package ThirdPartyContractController{
+        class ThirdPartyContractController {
+            + GetSearch(request: RequestThirdPartyContractSearchDto, warehouseId: int, page: int, limit: int): IActionResult
+            + GetSearchForTLot(clientId: int): IActionResult
+            + GetSearchForTShipmentInstruction(clientId: int): IActionResult
+            + GetRecord(id: int): IActionResult
+            + Save(thirdPartyContractSave: ThirdPartyContractSaveDto): IActionResult
+            + Update(id: int, thirdPartyContractUpdate: ThirdPartyContractUpdateDto): IActionResult
+            + GetExcel(request: RequestThirdPartyContractSearchDto, warehouseId: int): IActionResult
+        }
+    }
+}
+ 
+package Application {
+   package ContractServiceApplication{
+        class ContractServiceApplication {
+            + List(valueFiler: string, idWareHouse: int, page: int, limit: int): ResponseDTO
+            + ExportReportContractServices(valueFiler: string, idWareHouse: int): ResponseDTO
+            + ListClients(idCompany: int, value: string): ResponseDTO
+            + ListGeneral(idCompany: int, idWareHouse: int): ResponseDTO
+            + GetClientById(id: int): ResponseDTO
+            + GetContractServiceById(id: int): ResponseDTO
+            + UpdateState(id: int, idState: int, closeDate: string?): ResponseDTO
+            + UploadFile(pathFile: string, file: byte[]): ResponseDTO
+            + DeleteFile(pathFile: string): ResponseDTO
+            + RegisterContractService(model: ContractServiceRegisterDto): ResponseDTO
+            + UpdateContractService(contractServiceEntity: ContractServiceEntity): ResponseDTO
+            + ValidateStatus(id: int): string
+            + ListContractServiceForlot(idWarehouse: int, idClient: int, IdProduct: int, state: int): ResponseDTO
+            + CheckContractAddendums(id: int): bool
+            + Search(request: RequestContractServiceSearchDto, idWareHouse: int, page: int, limit: int): ResponseDTO
+            + Copy(request: ContractServiceCopyDto): ResponseDTO
+        }
+    }
+
+     package ServiceApplication {
+        class ServiceApplication {
+            + List(): ResponseDTO
+        }
+    }
+
+    package ThirdPartyContractApplication{
+        class ThirdPartyContractApplication {
+            + Search(request: RequestThirdPartyContractSearchDto, warehouseId: int, page: int, limit: int, masterTablesType: List<MasterTableDto>, masterTablesState: List<MasterTableDto>): PaginacionEntity<ThirdPartyContractSearchDto>
+        }
+    }
+
+     package MasterTableApplication {
+        class MasterTableApplication {
+            + GetGroup(group: string): List<MasterTableDto>
+        }
+    }
+}
+ 
+package Repository {
+    package LotRepository{
+        class LotRepository {
+            + Get(id: int): Lote
+            + GetAll(): List<Lote>
+            + Post(lote: Lote): void
+            + Put(id: int, lote: Lote): void
+            + Delete(id: int): void
+        }
+    }
+   
+        package ContractServiceRepository{
+        class ContractServiceRepository {
+            + ExportExcelList(valueFiler: string, idWareHouse: int): byte[]
+            + GetContractServiceById(id: int): ContractServiceEntity?
+            + GetClientById(id: int): ClientEntity?
+            + GenerateCodeContract(id: int, idReference: int?): string
+            + DeleteDetailContractServiceById(id: int): bool
+            + GetDetailContractServiceById(id: int): DetailContractServiceEntity
+            + List(valueFiler: string, idWareHouse: int, pagina: int, limite: int): PaginacionEntity<ContractServiceList>
+            + ListClients(idCompany: int, value: string): List<ClientEntity>
+            + ListCurrency(): List<CurrencyEntity>
+            + ListProducts(): List<ProductEntity>
+            + ListServices(idWareHouse: int): List<ServiceEntity>
+            + ListUnitOfMeasurement(): List<MeasurementUnitEntity>
+            + ListContractServiceForlot(idWarehouse: int, idClient: int, IdProduct: int, state: int): List<ContractServiceEntity>
+            + CheckContractAddendums(id: int): bool
+            + Search(request: RequestContractServiceSearchDto, idWareHouse: int, page: int, limit: int): PaginacionEntity<ContractServiceList>
+        }
+    } 
+
+     package ServiceRepository {
+        class ServiceRepository {
+            + List(): List<ServiceEntity>
+        }
+    }
+
+    package ThirdPartyContractRepository{
+        class ThirdPartyContractRepository {
+            + Search(request: RequestThirdPartyContractSearchDto, warehouseId: int, page: int, limit: int): PaginacionEntity<ThirdPartyContractEntity>
+            + SearchForLot(clientId: int): List<ThirdPartyContractEntity>
+            + SearchForShipmentInstruction(clientId: int): List<ThirdPartyContractEntity>
+            + GetExcel(request: RequestThirdPartyContractSearchDto, warehouseId: int): IEnumerable<ThirdPartyContractEntity>
+            + GetCorrelative(warehouseId: int): int
+        }
+    }
+
+     package MasterTableRepository {
+        class MasterTableRepository {
+            + GetWhere(where: Expression<Func<MasterTableEntity, bool>>, trackChanges: bool): IEnumerable<MasterTableEntity>
+        }
+    }
+}
+
+
+ 
+' Interfaces de Repository
+interface IRepository<T> {
+    + ObtenerPorId(id: int): T
+    + ObtenerTodos(): List<T>
+    + Crear(entidad: T): void
+    + Actualizar(entidad: T): void
+    + Eliminar(id: int): void
+}
+ 
+Api.ContractServiceController.ContractServiceController --> Application.ContractServiceApplication.ContractServiceApplication
+Application.ContractServiceApplication.ContractServiceApplication --> Repository.ContractServiceRepository.ContractServiceRepository
+
+Api.ServiceController.ServiceController --> Application.ServiceApplication.ServiceApplication
+Application.ServiceApplication.ServiceApplication --> Repository.ServiceRepository.ServiceRepository
+ 
+Api.ThirdPartyContractController.ThirdPartyContractController --> Application.ThirdPartyContractApplication.ThirdPartyContractApplication
+Application.ThirdPartyContractApplication.ThirdPartyContractApplication --> Repository.ThirdPartyContractRepository.ThirdPartyContractRepository
+
+Application.MasterTableApplication.MasterTableApplication --> Repository.MasterTableRepository.MasterTableRepository
+
+@enduml

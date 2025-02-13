@@ -1,0 +1,76 @@
+@startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - Integration-service"
+skinparam dpi 50
+skinparam pageSize A3
+ 
+package Api {
+     package IntegrationController {
+        class IntegrationController {
+            + SaveInformation(request: SaveInformationDto): IActionResult
+            + WarehouseLots(destinatario: string, remitente: string, producto: string, tipoOperacion: string): IActionResult
+            + PendingTicket(request: PendingTicketHeadRequest): IActionResult
+        }
+    }
+
+     
+}
+ 
+package Application {
+   package IntegrationApplication {
+        class IntegrationApplication {
+            + SaveInformationTicket(request: SaveInformationDto): ResponseDTO
+            + ExecutePendingTicketAsync(request: PendingTicketHeadRequest): ResponseDTO
+        }
+    }
+    
+}
+ 
+package Repository {
+    package IntegrationRepository {
+        class IntegrationRepository {
+            + UpdateRangeEntityTruckReception(entity: List<TruckReceptionEntity>): bool
+            + CreateRangeEntityTruckReception(entity: List<TruckReceptionEntity>): bool
+            + CreateEntityTruckReception(entity: TruckReceptionEntity): bool
+            + GetPercentageh2o(): decimal
+            + GetDMTByIdLot(idLot: int, typeOperation: int): dynamic
+            + GetDmtAndWmtByIdPile(idPile: int): dynamic
+            + UpdateEntityTruckReception(entity: TruckReceptionEntity): bool
+            + GetLotReweightByIdLot(id: int): ReweightLotEntity
+            + GetLotById(id: int): LotEntity
+            + GetLotReweightById(id: int): ReweightLotEntity
+        }
+    }
+     
+      package IntegrationRepository {
+        class IntegrationRepository {
+            + ValidateProductLot(destinatario: string, remitente: string, producto: string, tipoOperacion: string, lotNumer: string): bool
+            + WarehouseLots(destinatario: string, remitente: string, producto: string, tipoOperacion: string): List<LotReceptionDto>
+        }
+    }
+
+    package PesajeLogRepository {
+        class PesajeLogRepository {
+            + SaveLog(request: PesajeLogEntity): bool
+            + SaveLogRange(request: List<PesajeLogEntity>): List<PesajeLogEntity>
+            + UpdateLogs(entities: List<PesajeLogEntity>): void
+            + GetLotOrigin(ticket: string): string
+        }
+    }
+
+
+}
+ 
+' Interfaces de Repository
+interface IRepository<T> {
+    + ObtenerPorId(id: int): T
+    + ObtenerTodos(): List<T>
+    + Crear(entidad: T): void
+    + Actualizar(entidad: T): void
+    + Eliminar(id: int): void
+}
+ 
+Api.IntegrationController.IntegrationController --> Application.IntegrationApplication.IntegrationApplication
+Application.IntegrationApplication.IntegrationApplication --> Repository.IntegrationRepository.IntegrationRepository
+
+ 
+@enduml

@@ -1,0 +1,427 @@
+@startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - dispatch-service"
+skinparam dpi 50
+skinparam pageSize A3
+ 
+package Api {
+     package AnalysisInstructionController {
+        class AnalysisInstructionController {
+            + GetSearch(request: RequestSearchAnalysisDto, warehouseId: int, page: int, limit: int): Task<IActionResult>
+            + GetListLots(warehouseId: int): Task<IActionResult>
+            + Download(id: int): Task<IActionResult>
+            + Register(request: AnalysisInstructionDto): Task<IActionResult>
+            + Update(id: int, request: AnalysisInstructionDto): Task<IActionResult>
+        }
+    }
+     package DispatchController{
+        class DispatchController {
+            + GetSearch(request: RequestSearchTruckDto): IActionResult
+            + GetPreliminaryDispatchLotSearch(request: RequestPreliminaryDispatchDto): IActionResult
+            + DownloadReport(searchDto: RequestSearchTruckDto): IActionResult
+            + GetSearchLot(request: LotRequestSearchDto): IActionResult
+            + DownloadReportDispatchLot(searchDto: LotRequestSearchDto): IActionResult
+            + GetDetailsDispatchReport(warehouseId: int, clientId: int, stockGroupId: int, fromDate: string, toDate: string): IActionResult
+            + GetDetailsDispatchReportExcel(warehouseId: int, clientId: int, stockGroupId: int, fromDate: string, toDate: string, strDate: string): IActionResult
+        }
+    }
+
+     package DispatchConstructionController {
+        class DispatchConstructionController {
+            + GetSearch(request: RequestSearchDispatchInstructionDto): JsonResult
+            + GetDataForExcel(request: RequestSearchDispatchInstructionDto): File
+            + GetRecordById(id: int): JsonResult
+            + GeneratePdf(id: int, isToday: bool): File
+            + SendEmail(id: int): JsonResult
+            + GetResultFilterLots(supplierId: int, typeFilter: TypeFilterLot, valueFilter: string): JsonResult
+            + Register(request: SaveDispatchInstructionDto): JsonResult
+            + Update(id: int, request: SaveDispatchInstructionDto): JsonResult
+            + GetEmails(id: int): JsonResult
+        }
+    }
+
+     class InventoryController {
+        + ClosureExists(date: DateTime, shift: int, warehouseId: int): JsonResult
+        + GetLastClosure(date: DateTime, shift: int, warehouseId: int): JsonResult
+        + CloseStock(stockClosureDto: StockClosureRequestDto): JsonResult
+        + StockReportPreview(stockClosureDto: StockClosureRequestDto): JsonResult
+        + GetStockByStockGroup(stockClosureDto: StockClosureRequestDto): JsonResult
+        + GetExcel(stockReport: List<DetailDailyClosureStockReportDto>): IActionResult
+        + GetExcelStockDispatch(detail: List<DetailDispatchClosureStockReportDto>): IActionResult
+        + GetClosures(warehouseId: int): JsonResult
+        + GetExcelPile(stockReport: List<DetailDailyClosureStockReportDto>): IActionResult
+        + GetExcelLocation(stockReport: List<DetailDailyClosureStockReportDto>): IActionResult
+    }
+
+package ShipmentInstructionController {
+        class ShipmentInstructionController {
+            + GetSearch(request: RequestSearchDto, instructionType: int?, warehouseId: int, page: int, limit: int): IActionResult
+            + GetExcel(request: RequestSearchDto, instructionType: int?, warehouseId: int): IActionResult
+            + GetRecord(id: int): IActionResult
+            + Save(shipmentInstruction: ShipmentInstructionSaveDto): IActionResult
+            + Update(id: int, shipmentInstruction: ShipmentInstructionUpdateDto): IActionResult
+            + AssignBlendToShipmentInstruction(idPile: int, idShipmentInstruction: int, removeAssign: bool, userProcess: string): IActionResult
+            + SaveLots(request: LotDispatchSaveDto): IActionResult
+            + CloseDispatch(request: RequestCloseDispatch): IActionResult
+            + ShipmentInstrucionBalance(request: SIBalanceRequest): IActionResult
+            + GetReportDisPatch(id: int): IActionResult
+            + GetDetailsByIdShipmentInstruction(idShipmentInstruction: int, limit: int, page: int): IActionResult
+            + GetReportShipmentInstructionExcel(id: int): IActionResult
+            + GetDetailedReceptionReport(id: int): IActionResult
+            + GetDetailedReceptionExcelReport(id: int): IActionResult
+        }
+    }
+}
+ 
+package Application {
+    package AnalysisInstructionApplication {
+        class AnalysisInstructionApplication {
+            + GetSearch(request: RequestSearchAnalysisDto, warehouseId: int, page: int, limit: int): Task<PaginacionEntity<AnalysisInstructionDto>>
+            + GetListLots(warehouseId: int): Task<dynamic>
+            + Save(request: AnalysisInstructionDto, id: int): Task<AnalysisInstructionEntity>
+            + SendEmail(word: byte[], pathExcel: string, pathTemplateEmail: string): Task<EmailSendOperation>
+            + DownloadById(id: int): Task<byte[]>
+            + RegisterAnalysisInstruction(request: AnalysisInstructionDto): Task<byte[]>
+            + UpdateAnalysisInstruction(id: int, request: AnalysisInstructionDto): Task<byte[]>
+        }
+    }
+
+    package DispatchApplication{
+        class DispatchApplication {
+            + GetSearchTruck(request: RequestSearchTruckDto): PaginacionEntity<TruckReceptionDto>
+            + GetExcel(request: RequestSearchTruckDto): byte[]
+            + GetSearchDispatchLots(request: LotRequestSearchDto): PaginacionEntity<DispatchLotSearchDto>
+            + GetValidReception(id: int): dynamic
+            + GetExcelDispatchLot(request: LotRequestSearchDto): byte[]
+            + GetDetailsDispatchReport(warehouseId: int, idClient: int, idStockGroup: int, fromDate: string, toDate: string): DispatchReportDto
+            + GetDetailsDispatchReportExcel(warehouseId: int, idClient: int, idStockGroup: int, fromDate: string, toDate: string, strDate: string): byte[]
+            + GetPreliminaryDispatchLotSearch(request: RequestPreliminaryDispatchDto): PaginacionEntity<PreliminaryDispatchLotSearchDto>
+        }
+    }
+
+     package DispatchConstructionApplication {
+        class DispatchConstructionApplication {
+            + Search(request: RequestSearchDispatchInstructionDto, masterTablesState: List<MasterTableDto>, masterTablesType: List<MasterTableDto>): PaginacionEntity<DispatchInstructionSearchDto>
+            + GetReportDispatchInstruction(request: RequestSearchDispatchInstructionDto, masterTablesState: List<MasterTableDto>, masterTablesType: List<MasterTableDto>): byte[]
+            + GetResultFilterLots(supplierCompanyId: int, typeFilter: TypeFilterLot, valueFilter: string): dynamic
+            + GetRecordById(id: int): DispatchInstructionDto
+            + Save(request: SaveDispatchInstructionDto): DispatchInstructionDto
+            + SendEmail(id: int): bool
+            + GeneratePDF(id: int, isToday: bool): byte[]
+        }
+    }
+
+     class InventoryApplication {
+        + GetLastClosure(date: DateTime, shift: int, warehouseId: int): DailyClosureEntity
+        + ClosureExists(date: DateTime, shift: int, warehouseId: int): bool
+        + CloseStock(stockClosureRequestDto: StockClosureRequestDto): bool
+        + GetStockReport(stockClosureRequestDto: StockClosureRequestDto, masterTableStockReportTypes: List<MasterTableDto>, masterTableShifts: List<MasterTableDto>): (List<DetailDailyClosureStockReportDto>, List<DetailDispatchClosureStockReportDto>)
+        + GetPreviewStockReport(stockClosureRequestDto: StockClosureRequestDto, masterTableStockReportTypes: List<MasterTableDto>, masterTableShifts: List<MasterTableDto>): (List<DetailDailyClosureStockReportDto>, List<DetailDispatchClosureStockReportDto>)
+        + GetClosuresByWarehouse(warehouseId: int): List<DailyClosureDto>
+    }
+
+    package ShipmentInstructionApplication {
+        class ShipmentInstructionApplication {
+            + GetSearch(request: RequestSearchDto, instructionType: int?, warehouseId: int, page: int, limit: int, masterTableSaleTypes: List<MasterTableDto>, masterTableShipmentTypes: List<MasterTableDto>, masterTableStates: List<MasterTableDto>): PaginacionEntity<ShipmentInstructionSearchDto>
+            + GetExcel(request: RequestSearchDto, instructionType: int?, warehouseId: int, masterTableSaleTypes: List<MasterTableDto>, masterTableShipmentTypes: List<MasterTableDto>, masterTableStates: List<MasterTableDto>): List<ShipmentInstructionExcelDto>
+            + GetRecord(id: int): ShipmentInstructionRecordDto
+            + Save(shipmentInstruction: ShipmentInstructionSaveDto): ShipmentInstructionRecordDto
+            + Update(id: int, shipmentInstruction: ShipmentInstructionUpdateDto): ShipmentInstructionRecordDto
+            + AssignBlendToShipmentInstruction(idPile: int, idShipmentInstruction: int, removeAssign: bool, userProcess: string): ShipmentInstructionRecordDto
+            + SaveLots(request: LotDispatchSaveDto): LotDispatchResponseDto
+            + CloseDispatch(request: RequestCloseDispatch): ShipmentInstructionRecordDto
+            + ShipmentInstructionsBalance(request: SIBalanceRequest): List<ShipmentInstructionBalanceDto>
+            + ReportDispatchLevante(idShipmentInstruction: int): ShipmentInstructionReportDto
+            + GetDetailsByIdShipmentInstruction(idShipmentInstruction: int, limit: int, page: int): PaginacionEntity<dynamic>
+            + GetReportShipmentInstructionExcel(idShipmentInstruction: int): byte[]
+            + GetDetailedShipmentInstructionReport(idShipmentInstruction: int): List<DetailedShipmentInstructionReportDto>
+            + GetDetailedShipmentInstructionExcelReport(idShipmentInstruction: int): List<DetailedShipmentInstructionExcelReportDto>
+        }
+    }
+
+     package MasterTableApplication{
+        class MasterTableApplication {
+            + GetGroup(group: string): List<MasterTableDto>
+        }
+    }
+}
+ 
+package Repository {
+    package AnalysisInstructionRepository {
+        class AnalysisInstructionRepository {
+            + GetSearch(request: RequestSearchAnalysisDto, warehouseId: int, page: int, limit: int): Task<PaginacionEntity<AnalysisInstructionEntity>>
+            + GetListLots(warehouseId: int): Task<List<dynamic>>
+            + GetMaxNumber(): Task<string>
+        }
+    }
+    package DispatchRepository{
+        class DispatchRepository {
+            + GetDetailsDispatchReport(warehouseId: int, clientId: int, stockGroupId: int, fromDate: string, toDate: string): IEnumerable<ShipmentInstructionEntity>
+            + GetDetailsDispatchReportExcel(warehouseId: int, clientId: int, stockGroupId: int, fromDate: string, toDate: string, strDate: string): byte[]
+        }
+    }
+
+     package DispatchConstructionRepository {
+        class DispatchConstructionRepository {
+            + GetReportDispatchInstruction(request: RequestSearchDispatchInstructionDto, laboratories: List<LaboratoryEntity>): List<DispatchInstructionEntity>
+            + Search(request: RequestSearchDispatchInstructionDto, laboratories: List<LaboratoryEntity>): PaginacionEntity<DispatchInstructionEntity>
+            + GetResultFilterLots(supplierCompanyId: int, typeFilter: TypeFilterLot, valueFilter: string): dynamic
+            + GenerateCode(warehouseId: int, instructionType: TypeInstruction): string
+            + GeneratePDF(data: DispatchInstructionDataPdf, type: TypeInstruction): byte[]
+        }
+    }
+
+    package ShipmentInstructionRepository {
+        class ShipmentInstructionRepository {
+            + GetSearch(request: RequestSearchDto, instructionType: int?, warehouseId: int, page: int, limit: int): PaginacionEntity<ShipmentInstructionEntity>
+            + GetExcel(request: RequestSearchDto, instructionType: int?, warehouseId: int): List<ShipmentInstructionEntity>
+            + GenerateCode(companyId: int, instructionType: int, stockGroupId: int): string
+            + GetPileById(id: int): PileEntity
+            + GetPileWithLotsById(id: int): PileEntity
+            + GetLotWithAssignById(id: int): LotEntity
+            + GetLotsAndSubLotsByIdPile(id: int): dynamic
+            + GetReportShipmentInstructionExcel(idShipmentInstruction: int): byte[]
+            + ShipmentInstructionsBalance(request: SIBalanceRequest): List<ShipmentInstructionEntity>
+            + GetDetailedShipmentInstructionReport(shipmentInstructionId: int): IEnumerable<DetailTruckAssignLotEntity>
+        }
+    }
+
+    package MasterTableRepository{
+        class MasterTableRepository {
+            + GetClientEntity(company: int): ClientEntity
+        }
+    }
+
+     package DailyClosureRepository {
+        class DailyClosureRepository {
+            + GetLastClosure(date: DateTime, shift: int, warehouseId: int): DailyClosureEntity
+            + GetClosure(date: DateTime, shift: int, warehouseId: int): DailyClosureEntity
+            + GetClosuresByWarehouse(warehouseId: int): IEnumerable<DailyClosureEntity>
+        }
+    }
+
+    package DailyClosureRepository {
+        class DailyClosureRepository {
+            + GetLastClosure(date: DateTime, shift: int, warehouseId: int): DailyClosureEntity
+            + GetClosure(date: DateTime, shift: int, warehouseId: int): DailyClosureEntity
+            + GetClosuresByWarehouse(warehouseId: int): IEnumerable<DailyClosureEntity>
+        }
+    }
+
+    package LotRepository{
+        class LotRepository {
+            + GetExcelDispatchLot(request: LotRequestSearchDto): byte[]
+            + GetSearchDispathLot(request: LotRequestSearchDto): PaginacionEntity<LotEntity>
+            + GetValidReception(id: int): dynamic
+            + GetLotsByWarehouse(warehouseId: int): IEnumerable<LotEntity>
+            + GetLotsByIds(ids: List<int>): List<LotEntity>
+            + GetDetailTruckLotsByIds(ids: List<int>): List<DetailTruckAssignLotEntity>
+            + GetSearchPreliminary(request: RequestPreliminaryDispatchDto): PaginacionEntity<LotEntity>
+        }
+    }
+
+     package PileRepository {
+        class PileRepository {
+            + GetReweightPiles(warehouseId: int): IEnumerable<int>
+            + GetDmtAndWmtByIdPile(idPile: int): dynamic
+            + GetPileDispatchByWarehouseId(warehouseId: int): IEnumerable<DetailDispatchDailyClosureEntity>
+        }
+    }
+
+    package SubLotRepository{
+        class SubLotRepository {
+            + GetSubLotsByWarehouse(warehouseId: int): IEnumerable<SubLotEntity>
+        }
+    }
+
+    package TruckReceptionRepository {
+    class TruckReceptionRepository {
+        + GetSearchTruck(request: RequestSearchTruckDto): PaginacionEntity<TruckReceptionEntity>
+        + GetExcel(request: RequestSearchTruckDto): byte[]
+        + GetDMTByIdLot(idLot: int, typeOperation: int): dynamic
+    }
+}
+}
+ package Database {
+    class TruckReceptionEntity
+    class DetailTruckAssignLotEntity
+    class LotEntity
+    class ClientEntity
+    class ProductEntity
+    class TruckEntity
+    class WarehouseEntity
+    class CompanyEntity
+    class MasterTableEntity
+}
+
+ class DailyClosureEntity {
+    - Id: int
+    - WarehouseId: int
+    - ClosureDate: DateTime
+    - Shift: int
+    - Status: string
+    - DetailDailyClosureEntities: List<DetailDailyClosureEntity>
+}
+
+class DetailDailyClosureEntity {
+    - Id: int
+    - DailyClosureId: int
+    - SubLotEntity: SubLotEntity
+}
+
+class SubLotEntity {
+    - Id: int
+    - LotId: int
+    - PileId: int
+}
+
+  class LotEntity {
+        - Id: int
+        - Number: string
+        - WareHouseId: int
+        - ClientId: int
+        - StockGroupId: int
+        - SupplierCompanyId: int
+        - Status: string
+    }
+    class DetailTruckAssignLotEntity {
+        - Id: int
+        - IdLot: int
+        - AssignmentStatus: string
+    }
+    class PaginacionEntity<T> {
+        - Items: List<T>
+        - Pages: int
+        - Total: int
+    }
+    class LotRequestSearchDto {
+        - WarehouseId: int
+        - State: string
+        - Number: string
+        - S_i_number: string
+        - Client: string
+        - Pile: string
+        - StockGroup: string
+        - Vessel: string
+        - DateFrom: string
+        - DateTo: string
+    }
+    class RequestPreliminaryDispatchDto {
+        - Limit: int
+        - Page: int
+    }
+     class ServiceOrderEntity {
+        + Id: int
+        + Status: string
+        + PileIdSplit: int?
+        + IdWareHouse: int
+    }
+
+    class DetailServiceOrderEntity {
+        + Id: int
+        + ServiceOrderId: int
+        + OrderType: string
+        + PileId: int?
+        + OriginPileId: int?
+    }
+
+    class ShipmentInstructionEntity {
+        + Id: int
+        + WarehouseId: int
+        + State: string
+        + Status: string
+        + PileIdSplit: int?
+    }
+
+    class PileEntity {
+        + Id: int
+        + Description: string
+        + PileNumber: string
+        + IdClient: int
+        + IdStockGroup: int
+    }
+
+    class LotEntity {
+        + Id: int
+        + PileId: int
+        + SizeWMT: decimal
+        + LotSizeDMT: decimal
+        + ShipmentInstructionId: int
+    }
+
+    class ClientEntity {
+        + Id: int
+        + Name: string
+    }
+
+    class StockGroupEntity {
+        + Id: int
+        + Name: string
+    }
+
+    class DetailDispatchDailyClosureEntity {
+        + PileId: int
+        + InPileWMT: decimal
+        + ClientEntity: ClientEntity
+        + StockGroupEntity: StockGroupEntity
+        + PileEntity: PileEntity
+    }
+
+' Interfaces de Repository
+interface IRepository<T> {
+    + ObtenerPorId(id: int): T
+    + ObtenerTodos(): List<T>
+    + Crear(entidad: T): void
+    + Actualizar(entidad: T): void
+    + Eliminar(id: int): void
+}
+ 
+Api.AnalysisInstructionController.AnalysisInstructionController --> Application.AnalysisInstructionApplication.AnalysisInstructionApplication
+Application.AnalysisInstructionApplication.AnalysisInstructionApplication --> Repository.AnalysisInstructionRepository.AnalysisInstructionRepository
+
+Api.DispatchController.DispatchController --> Application.DispatchApplication.DispatchApplication
+Application.DispatchApplication.DispatchApplication --> Repository.DispatchRepository.DispatchRepository
+
+Api.DispatchConstructionController.DispatchConstructionController --> Application.DispatchConstructionApplication.DispatchConstructionApplication
+Application.DispatchConstructionApplication.DispatchConstructionApplication --> Repository.DispatchConstructionRepository.DispatchConstructionRepository
+
+Api.InventoryController --> Application.InventoryApplication
+
+Api.ShipmentInstructionController.ShipmentInstructionController --> Application.ShipmentInstructionApplication.ShipmentInstructionApplication
+Application.ShipmentInstructionApplication.ShipmentInstructionApplication --> Repository.ShipmentInstructionRepository.ShipmentInstructionRepository
+
+Application.MasterTableApplication.MasterTableApplication --> Repository.MasterTableRepository.MasterTableRepository
+ 
+Repository.DailyClosureRepository.DailyClosureRepository --> DailyClosureEntity
+DailyClosureEntity "1" -- "*" DetailDailyClosureEntity
+DetailDailyClosureEntity "*" -- "1" SubLotEntity
+
+Repository.DailyClosureRepository.DailyClosureRepository --> DailyClosureEntity
+DailyClosureEntity "1" -- "*" DetailDailyClosureEntity
+DetailDailyClosureEntity "*" -- "1" SubLotEntity
+
+Repository.LotRepository.LotRepository --> Models.LotEntity
+Repository.LotRepository.LotRepository --> Models.DetailTruckAssignLotEntity
+Repository.LotRepository.LotRepository --> Models.PaginacionEntity
+Models.PaginacionEntity --> Models.LotEntity
+
+Repository.PileRepository.PileRepository --> Entities.ServiceOrderEntity
+Repository.PileRepository.PileRepository --> Entities.DetailServiceOrderEntity
+Repository.PileRepository.PileRepository --> Entities.ShipmentInstructionEntity
+Repository.PileRepository.PileRepository --> Entities.PileEntity
+Repository.PileRepository.PileRepository --> Entities.LotEntity
+Repository.PileRepository.PileRepository --> Entities.ClientEntity
+Repository.PileRepository.PileRepository --> Entities.StockGroupEntity
+Repository.PileRepository.PileRepository --> Entities.DetailDispatchDailyClosureEntity
+
+Repository.SubLotRepository.SubLotRepository --> Entities.SubLotEntity
+
+Repository.TruckReceptionRepository --> Database.TruckReceptionEntity 
+Repository.TruckReceptionRepository --> Database.DetailTruckAssignLotEntity 
+Repository.TruckReceptionRepository --> Database.LotEntity 
+Repository.TruckReceptionRepository --> Database.ClientEntity 
+Repository.TruckReceptionRepository --> Database.ProductEntity 
+Repository.TruckReceptionRepository --> Database.TruckEntity 
+Repository.TruckReceptionRepository --> Database.WarehouseEntity 
+Repository.TruckReceptionRepository --> Database.CompanyEntity 
+Repository.TruckReceptionRepository --> Database.MasterTableEntity 
+@enduml

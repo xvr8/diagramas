@@ -1,0 +1,636 @@
+@startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth + PileRepository"
+title "Diagrama de Clases - Mastertable"
+skinparam dpi 50
+skinparam pageSize A3
+
+package Api {
+ 
+    package PileController {
+        class PileController {
+            + Get(id: int): Lote
+            + GetAll(): List<Lote>
+            + Post(lote: Lote): void
+            + Put(id: int, lote: Lote): void
+            + Delete(id: int): void
+            + GetPilesByFilters(warehouseId: int, clientId: int, stockGroupId: int, locationId: int): ActionResult
+        }
+    }
+  
+    
+    package ClientController {
+    class ClientController {
+        + GetSearch(client: string, idCompany: int): ActionResult
+        + GetSearchExternal(client: string, idCompany: int): ActionResult
+        + GetSearchExternalForTLot(client: string, idCompany: int): ActionResult
+        + GetSearchExternalForTSI(client: string, idCompany: int): ActionResult
+        + SearchSupervisorByIdClient(idClient: int, supervisor: string): ActionResult
+        + SearchByFlagCompany(client: string, idCompany: int): ActionResult
+        + SearchCompanyForPile(client: string, idCompany: int): ActionResult
+        + SearchClientsForReports(client: string): ActionResult
+        + SearchClientsForTrucksQuery(client: string, idCompany: int): ActionResult
+    }
+}
+
+package CompanyController {
+    class CompanyController {
+        + GetSearch(company: string): ActionResult
+    }
+}
+
+package MasterTableController {
+    class MasterTableController {
+        + GetSearch(domain: string): ActionResult
+        + GetAll(): ActionResult
+        + GetAllGrouped(idCompany: int, idWarehouse: int): ActionResult
+        + SendEmail(request: EmailRequest): ActionResult
+    }
+}
+
+package QualityController {
+    class QualityController {
+        + FindBySupplierCompanyAndStockGroup(supplierCompany: int, stockGroup: int): ActionResult
+        + FindByStockGroup(stockGroup: int): ActionResult
+        + FindByClient(client: int): ActionResult
+        + FindByPurchaseSaleContract(purchaseSaleContractId: int): ActionResult
+    }
+}
+
+package StockGroupController {
+    class StockGroupController {
+        + GetStockGroup(): ActionResult
+    }
+}
+
+package SupervisorController {
+    class SupervisorController {
+        + GetSearch(idCompany: int): ActionResult
+    }
+}
+
+ package SupplierController {
+    class SupplierController {
+        + GetSearch(supplier: string, idCompany: int): ActionResult
+        + GetSearchSupplierCompanyEntities(supplier: string, idCompany: int): ActionResult
+        + SearchSupplierForTrucksQuery(supplier: string, idCompany: int): ActionResult
+        + SearchSuppliersByIdClient(idClient: int, supplier: string): ActionResult
+        + SearchSupplierFilterNotCompany(supplier: string, idCompany: int): ActionResult
+        + SearchSupplierFilterInCompany(supplier: string, idCompany: int): ActionResult
+    }
+}
+
+
+}
+
+package Application {
+    
+    package PileApplication {
+        class PileApplication {
+            + Get(id: int): Lote
+            + GetAll(): List<Lote>
+            + Post(lote: Lote): void
+            + Put(id: int, lote: Lote): void
+            + Delete(id: int): void
+            + FindPilesByFilters(warehouseId: int, clientId: int, stockGroupId: int, locationId: int): Task<ResponseDTO>
+        }
+    }
+    
+   
+    package ClientApplication {
+    class ClientApplication {
+        + SearchClients(client: string, idCompany: int): Task<ResponseDTO>
+        + SearchExternalClientsForTLot(client: string, idCompany: int): Task<ResponseDTO>
+        + SearchExternalClientsForTSI(client: string, idCompany: int): Task<ResponseDTO>
+        + SearchSupervisorByIdClient(idClient: int, supervisor: string): Task<ResponseDTO>
+        + SearchByFlagCompany(client: string, idCompany: int): Task<ResponseDTO>
+        + SearchCompanyForPile(client: string, idCompany: int): Task<ResponseDTO>
+        + SearchClientsForReports(client: string): Task<ResponseDTO>
+        + SearchClientsForTrucksQuery(client: string, idCompany: int): Task<ResponseDTO>
+    }
+}
+   package CompanyApplication {
+    class CompanyApplication {
+        + SearchCompany(company: string): Task<ResponseDTO>
+    }
+}
+
+package MasterTableApplication {
+    class MasterTableApplication {
+        + GetByDomain(domain: string): Task<ResponseDTO>
+        + GetAllGroupedByDomain(idCompany: int, idWarehouse: int): Task<ResponseDTO>
+        + GetAll(): Task<ResponseDTO>
+        + SendEmail(request: EmailRequest): Task<ResponseDTO>
+    }
+}
+
+package QualityApplication {
+    class QualityApplication {
+        + FindQualitiesBySupplierCompanyAndStockGroup(supplierCompany: int, stockGroup: int): Task<ResponseDTO>
+        + FindQualitiesByStockGroup(stockGroup: int): Task<ResponseDTO>
+        + FindQualitiesByClient(client: int): Task<ResponseDTO>
+        + FindQualitiesByPurchaseSaleContract(purchaseSaleContractId: int): Task<ResponseDTO>
+    }
+}
+
+package StockGroupApplication {
+    class StockGroupApplication {
+        + GetStockGroup(): Task<ResponseDTO>
+    }
+}
+
+package SupervisorApplication {
+    class SupervisorApplication {
+        + GetSupervisorByCompany(idCompany: int): Task<ResponseDTO>
+    }
+}
+
+package SupplierApplication {
+    class SupplierApplication {
+        + SearchSuppliers(supplier: string, idCompany: int): Task<ResponseDTO>
+        + SearchSupplierCompanyEntities(supplier: string, idCompany: int): Task<ResponseDTO>
+        + SearchSupplierForTrucksQuery(supplier: string, idCompany: int): Task<ResponseDTO>
+        + SearchSuppliersByIdClient(idClient: int, supplier: string): Task<ResponseDTO>
+        + SearchSupplierFilterNotCompany(supplier: string, idCompany: int): Task<ResponseDTO>
+        + SearchSupplierFilterInCompany(supplier: string, idCompany: int): Task<ResponseDTO>
+    }
+}
+package EmailApplication {
+    class EmailApplication {
+        + SendEmail(request: EmailRequest): Task<ResponseDTO>
+    }
+}
+
+package ExternalClientApplication {
+    class ExternalClientApplication {
+        + SearchExternalClients(client: string, idCompany: int): Task<ResponseDTO>
+    }
+}
+
+
+}
+
+package Repository {
+   
+    package PileRepository {
+        interface IPileRepository {
+            + GetByFilters(warehouseId: int, clientId: int, stockGroupId: int, locationId: int): Task<IEnumerable<PileEntity>>
+        }
+
+        class PileRepository {
+            + GetByFilters(warehouseId: int, clientId: int, stockGroupId: int, locationId: int): Task<IEnumerable<PileEntity>>
+        }
+
+        PileRepository ..|> IPileRepository
+    }
+    
+    package ClientRepository {
+    interface IClientRepository {
+        + SearchClients(client: string, idCompany: int, flagCompany: bool): Task<IEnumerable<ClientEntity>>
+        + SearchExternalClientsForTLot(client: string, idCompany: int): Task<IEnumerable<ClientEntity>>
+        + SearchExternalClientsForTSI(client: string, idCompany: int): Task<IEnumerable<ClientEntity>>
+        + SearchSupervisorByIdClient(idClient: int, supervisor: string): Task<IEnumerable<SupervisorEntity>>
+        + SearchClientsCompany(client: string, idCompany: int, flagCompany: bool): Task<IEnumerable<ClientEntity>>
+        + SearchClientsCompanyForPile(client: string, idCompany: int, flagCompany: bool): Task<IEnumerable<ClientEntity>>
+        + SearchClientsForReports(client: string): Task<IEnumerable<ClientEntity>>
+        + SearchClientsForTrucksQuery(client: string, idCompany: int): Task<IEnumerable<ClientEntity>>
+    }
+
+    class ClientRepository {
+        + SearchClients(client: string, idCompany: int, flagCompany: bool): Task<IEnumerable<ClientEntity>>
+        + SearchExternalClientsForTLot(client: string, idCompany: int): Task<IEnumerable<ClientEntity>>
+        + SearchExternalClientsForTSI(client: string, idCompany: int): Task<IEnumerable<ClientEntity>>
+        + SearchSupervisorByIdClient(idClient: int, supervisor: string): Task<IEnumerable<SupervisorEntity>>
+        + SearchClientsCompany(client: string, idCompany: int, flagCompany: bool): Task<IEnumerable<ClientEntity>>
+        + SearchClientsCompanyForPile(client: string, idCompany: int, flagCompany: bool): Task<IEnumerable<ClientEntity>>
+        + SearchClientsForReports(client: string): Task<IEnumerable<ClientEntity>>
+        + SearchClientsForTrucksQuery(client: string, idCompany: int): Task<IEnumerable<ClientEntity>>
+    }
+
+    ClientRepository ..|> IClientRepository
+}
+package CompanyRepository {
+    interface ICompanyRepository {
+        + SearchCompany(company: string): Task<IEnumerable<CompanyEntity>>
+    }
+
+    class CompanyRepository {
+        + SearchCompany(company: string): Task<IEnumerable<CompanyEntity>>
+    }
+
+    CompanyRepository ..|> ICompanyRepository
+}
+
+package MasterTableRepository {
+    interface IMasterTableRepository {
+        + GetByDomain(domain: string): Task<IEnumerable<MasterTableEntity>>
+        + GroupByDomain(): Task<IEnumerable<MasterTableDomainDto>>
+    }
+
+    class MasterTableRepository {
+        + GetByDomain(domain: string): Task<IEnumerable<MasterTableEntity>>
+        + GroupByDomain(): Task<IEnumerable<MasterTableDomainDto>>
+    }
+
+    MasterTableRepository ..|> IMasterTableRepository
+}
+
+package QualityRepository {
+    interface IQualityRepository {
+        + FilterBySupplierCompanyAndStockGroup(supplierCompany: int, stockGroup: int): Task<IEnumerable<QualityEntity>>
+        + FilterByStockGroup(stockGroup: int): Task<IEnumerable<QualityEntity>>
+        + FilterByClient(client: int): Task<IEnumerable<QualityEntity>>
+        + FilterByPurchaseSaleContract(purchaseSaleContractId: int): Task<IEnumerable<QualityEntity>>
+    }
+
+    class QualityRepository {
+        + FilterBySupplierCompanyAndStockGroup(supplierCompany: int, stockGroup: int): Task<IEnumerable<QualityEntity>>
+        + FilterByStockGroup(stockGroup: int): Task<IEnumerable<QualityEntity>>
+        + FilterByClient(client: int): Task<IEnumerable<QualityEntity>>
+        + FilterByPurchaseSaleContract(purchaseSaleContractId: int): Task<IEnumerable<QualityEntity>>
+    }
+
+    QualityRepository ..|> IQualityRepository
+}
+
+package StockGroupRepository {
+    interface IStockGroupRepository {
+        + GetWhere(filter: Expression<Func<StockGroupEntity, bool>>, tracking: bool): Task<IEnumerable<StockGroupEntity>>
+    }
+
+    class StockGroupRepository {
+        + GetWhere(filter: Expression<Func<StockGroupEntity, bool>>, tracking: bool): Task<IEnumerable<StockGroupEntity>>
+    }
+
+    StockGroupRepository ..|> IStockGroupRepository
+}
+
+package SupervisorRepository {
+    interface ISupervisorRepository {
+        + GetSupervisorByCompany(idCompany: int): Task<IEnumerable<SupervisorEntity>>
+    }
+
+    class SupervisorRepository {
+        + GetSupervisorByCompany(idCompany: int): Task<IEnumerable<SupervisorEntity>>
+    }
+
+    SupervisorRepository ..|> ISupervisorRepository
+}
+
+ package SupplierRepository {
+    interface ISupplierRepository {
+        + SearchSuppliers(supplier: string, idCompany: int): Task<IEnumerable<SupplierEntity>>
+        + SearchSupplierCompanyEntities(supplier: string, idCompany: int): Task<IEnumerable<SupplierCompanyEntity>>
+        + SearchSupplierForTrucksQuery(supplier: string, idCompany: int): Task<IEnumerable<SupplierCompanyEntity>>
+        + SearchSuppliersByIdClient(idClient: int, supplier: string): Task<IEnumerable<SupplierEntity>>
+        + SearchSupplierFilterNotCompany(supplier: string, idCompany: int): Task<IEnumerable<SupplierCompanyEntity>>
+        + SearchSupplierFilterInCompany(supplier: string, idCompany: int): Task<IEnumerable<SupplierCompanyEntity>>
+    }
+
+    class SupplierRepository {
+        + SearchSuppliers(supplier: string, idCompany: int): Task<IEnumerable<SupplierEntity>>
+        + SearchSupplierCompanyEntities(supplier: string, idCompany: int): Task<IEnumerable<SupplierCompanyEntity>>
+        + SearchSupplierForTrucksQuery(supplier: string, idCompany: int): Task<IEnumerable<SupplierCompanyEntity>>
+        + SearchSuppliersByIdClient(idClient: int, supplier: string): Task<IEnumerable<SupplierEntity>>
+        + SearchSupplierFilterNotCompany(supplier: string, idCompany: int): Task<IEnumerable<SupplierCompanyEntity>>
+        + SearchSupplierFilterInCompany(supplier: string, idCompany: int): Task<IEnumerable<SupplierCompanyEntity>>
+    }
+
+    SupplierRepository ..|> ISupplierRepository
+}
+
+package CurrencyRepository {
+    interface ICurrencyRepository {
+        + GetWhere(filter: Expression<Func<CurrencyEntity, bool>>, tracking: bool): Task<IEnumerable<CurrencyEntity>>
+    }
+
+    class CurrencyRepository {
+        + GetWhere(filter: Expression<Func<CurrencyEntity, bool>>, tracking: bool): Task<IEnumerable<CurrencyEntity>>
+    }
+
+    CurrencyRepository ..|> ICurrencyRepository
+}
+
+package DeliveryRepository {
+    interface IDeliveryRepository {
+        + GetWhere(filter: Expression<Func<DeliveryEntity, bool>>, tracking: bool): Task<IEnumerable<DeliveryEntity>>
+    }
+
+    class DeliveryRepository {
+        + GetWhere(filter: Expression<Func<DeliveryEntity, bool>>, tracking: bool): Task<IEnumerable<DeliveryEntity>>
+    }
+
+    DeliveryRepository ..|> IDeliveryRepository
+}
+package ElementRepository {
+    interface IElementRepository {
+        + GetWhere(filter: Expression<Func<ElementEntity, bool>>, tracking: bool): Task<IEnumerable<ElementEntity>>
+    }
+
+    class ElementRepository {
+        + GetWhere(filter: Expression<Func<ElementEntity, bool>>, tracking: bool): Task<IEnumerable<ElementEntity>>
+    }
+
+    ElementRepository ..|> IElementRepository
+}
+package EmailRepository {
+    interface IEmailRepository {
+        + SendEmailAsync(request: EmailRequest): Task
+    }
+
+    class EmailRepository {
+        + SendEmailAsync(request: EmailRequest): Task
+    }
+
+    EmailRepository ..|> IEmailRepository
+}
+
+package ExternalClientRepository {
+    interface IExternalClientRepository {
+        + SearchExternalClients(client: string, idCompany: int): Task<IEnumerable<ExternalClientEntity>>
+    }
+
+    class ExternalClientRepository {
+        + SearchExternalClients(client: string, idCompany: int): Task<IEnumerable<ExternalClientEntity>>
+    }
+
+    ExternalClientRepository ..|> IExternalClientRepository
+}
+
+package LocationRepository {
+    interface ILocationRepository {
+        + GetLocationsByCompany(idCompany: int): Task<IEnumerable<LocationEntity>>
+    }
+
+    class LocationRepository {
+        + GetLocationsByCompany(idCompany: int): Task<IEnumerable<LocationEntity>>
+    }
+
+    LocationRepository ..|> ILocationRepository
+}
+
+package LaboratoryRepository {
+    interface ILaboratoryRepository {
+        + GetLaboratoriesByCompany(idCompany: int): Task<IEnumerable<LaboratoryEntity>>
+    }
+
+    class LaboratoryRepository {
+        + GetLaboratoriesByCompany(idCompany: int): Task<IEnumerable<LaboratoryEntity>>
+    }
+
+    LaboratoryRepository ..|> ILaboratoryRepository
+}
+
+package ProductRepository {
+    interface IProductRepository {
+        + GetWhere(filter: Expression<Func<ProductEntity, bool>>, tracking: bool): Task<IEnumerable<ProductEntity>>
+    }
+
+    class ProductRepository {
+        + GetWhere(filter: Expression<Func<ProductEntity, bool>>, tracking: bool): Task<IEnumerable<ProductEntity>>
+    }
+
+    ProductRepository ..|> IProductRepository
+}
+
+package UnitOfMeasurementRepository {
+    interface IUnitOfMeasurementRepository {
+        + GetWhere(filter: Expression<Func<UnitOfMeasurementEntity, bool>>, tracking: bool): Task<IEnumerable<UnitOfMeasurementEntity>>
+    }
+
+    class UnitOfMeasurementRepository {
+        + GetWhere(filter: Expression<Func<UnitOfMeasurementEntity, bool>>, tracking: bool): Task<IEnumerable<UnitOfMeasurementEntity>>
+    }
+
+    UnitOfMeasurementRepository ..|> IUnitOfMeasurementRepository
+}
+
+package UserRepository {
+    interface IUserRepository {
+        + ListTrafficUsersByCompany(companyId: int): Task<IEnumerable<UserEntity>>
+    }
+
+    class UserRepository {
+        + ListTrafficUsersByCompany(companyId: int): Task<IEnumerable<UserEntity>>
+    }
+
+    UserRepository ..|> IUserRepository
+}
+
+}
+
+
+
+
+' Interfaces de Repository
+interface IRepository<T> {
+    + ObtenerPorId(id: int): T
+    + ObtenerTodos(): List<T>
+    + Crear(entidad: T): void
+    + Actualizar(entidad: T): void
+    + Eliminar(id: int): void
+}
+
+package Domain {
+    class PileEntity {
+        + int IdWarehouse
+        + int IdClient
+        + int IdStockGroup
+        + int IdLocation
+        + string Status
+        + DateTime CreatedAt
+    }
+
+     class ClientEntity {
+        + int Id
+        + string Name
+        + string Ruc
+        + bool IsCompany
+        + int IdCompany
+    }
+
+    class SupervisorEntity {
+        + int Id
+        + string Name
+        + string Ruc
+    }
+
+    class CompanyEntity {
+    + int Id
+    + string Name
+    + string Ruc
+    + string ShortName
+    + string Status
+}
+
+class MasterTableEntity {
+    + int Id
+    + string Domain
+    + string Name
+    + int Value
+    + string Status
+    + int Order
+}
+
+class MasterTableDomainDto {
+    + string Domain
+    + List<ItemDto> Items
+}
+
+class QualityEntity {
+    + int Id
+    + string Name
+    + int IdSupplier
+    + int IdStockGroup
+    + string Status
+}
+
+class StockGroupEntity {
+    + int Id
+    + string Name
+    + string Status
+}
+
+class SupervisorEntity {
+    + int Id
+    + string Name
+    + int IdCompany
+    + string Status
+}
+
+class SupplierEntity {
+    + int Id
+    + string Name
+    + string Ruc
+    + string ShortName
+    + string Status
+}
+
+class SupplierCompanyEntity {
+    + int Id
+    + int SupplierId
+    + int CompanyId
+    + string Status
+}
+
+class CurrencyEntity {
+    + int Id
+    + string Name
+    + string Code
+    + string Symbol
+    + string Status
+}
+
+class DeliveryEntity {
+    + int Id
+    + string Name
+    + string Status
+}
+
+class ElementEntity {
+    + int Id
+    + string Name
+    + string Status
+}
+
+class ExternalClientEntity {
+    + int Id
+    + int ClientId
+    + string Status
+}
+
+class LocationEntity {
+    + int Id
+    + string Name
+    + int IdCompany
+    + string Status
+}
+
+class LaboratoryEntity {
+    + int Id
+    + string Name
+    + int IdCompany
+    + string Status
+}
+
+class ProductEntity {
+    + int Id
+    + string Name
+    + string Code
+    + string Status
+}
+
+class UnitOfMeasurementEntity {
+    + int Id
+    + string Name
+    + string Code
+    + string Status
+}
+
+class UserEntity {
+    + int Id
+    + string CompleteName
+    + string Username
+    + string Status
+}
+
+}
+
+
+' Relaciones entre capas
+
+Api.PileController.PileController --> Application.PileApplication.PileApplication
+Application.PileApplication.PileApplication --> Repository.PileRepository.IPileRepository
+Repository.PileRepository.PileRepository --> Domain.PileEntity
+
+Api.ClientController.ClientController --> Application.ClientApplication.ClientApplication
+Application.ClientApplication.ClientApplication --> Repository.ClientRepository.IClientRepository
+Repository.ClientRepository.ClientRepository --> Domain.ClientEntity
+
+Api.CompanyController.CompanyController --> Application.CompanyApplication.CompanyApplication
+Application.CompanyApplication.CompanyApplication --> Repository.CompanyRepository.ICompanyRepository
+Repository.CompanyRepository.CompanyRepository --> Domain.CompanyEntity
+
+Api.MasterTableController.MasterTableController --> Application.MasterTableApplication.MasterTableApplication
+Application.MasterTableApplication.MasterTableApplication --> Repository.MasterTableRepository.IMasterTableRepository
+Repository.MasterTableRepository.MasterTableRepository --> Domain.MasterTableEntity
+Repository.MasterTableRepository.MasterTableRepository --> Domain.MasterTableDomainDto
+
+Api.QualityController.QualityController --> Application.QualityApplication.QualityApplication
+Application.QualityApplication.QualityApplication --> Repository.QualityRepository.IQualityRepository
+Repository.QualityRepository.QualityRepository --> Domain.QualityEntity
+
+Api.StockGroupController.StockGroupController --> Application.StockGroupApplication.StockGroupApplication
+Application.StockGroupApplication.StockGroupApplication --> Repository.StockGroupRepository.IStockGroupRepository
+Repository.StockGroupRepository.StockGroupRepository --> Domain.StockGroupEntity
+
+Api.SupervisorController.SupervisorController --> Application.SupervisorApplication.SupervisorApplication
+Application.SupervisorApplication.SupervisorApplication --> Repository.SupervisorRepository.ISupervisorRepository
+Repository.SupervisorRepository.SupervisorRepository --> Domain.SupervisorEntity
+
+Api.SupplierController.SupplierController --> Application.SupplierApplication.SupplierApplication
+Application.SupplierApplication.SupplierApplication --> Repository.SupplierRepository.ISupplierRepository
+Repository.SupplierRepository.SupplierRepository --> Domain.SupplierEntity
+Repository.SupplierRepository.SupplierRepository --> Domain.SupplierCompanyEntity
+
+Repository.CurrencyRepository.CurrencyRepository --> Domain.CurrencyEntity
+
+Repository.DeliveryRepository.DeliveryRepository --> Domain.DeliveryEntity
+
+Repository.ElementRepository.ElementRepository --> Domain.ElementEntity
+
+Application.EmailApplication.EmailApplication --> Repository.EmailRepository.IEmailRepository
+Repository.EmailRepository.EmailRepository --> Domain.EmailRequest
+
+Application.ExternalClientApplication.ExternalClientApplication --> Repository.ExternalClientRepository.IExternalClientRepository
+Repository.ExternalClientRepository.ExternalClientRepository --> Domain.ExternalClientEntity
+
+Repository.LocationRepository.LocationRepository --> Domain.LocationEntity
+
+Repository.LaboratoryRepository.LaboratoryRepository --> Domain.LaboratoryEntity
+
+Repository.ProductRepository.ProductRepository --> Domain.ProductEntity
+
+Repository.UnitOfMeasurementRepository.UnitOfMeasurementRepository --> Domain.UnitOfMeasurementEntity
+
+Repository.UserRepository.UserRepository --> Domain.UserEntity
+
+@enduml

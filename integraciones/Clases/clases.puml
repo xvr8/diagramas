@@ -1,0 +1,344 @@
+@startuml "[Class Diagram] Integrador Pacas Pro - Bus/Middleware"
+title "[Class Diagram] Integrador Pacas Pro - Bus/Middleware"
+skinparam dpi 50
+skinparam pageSize A3
+
+package Infraestructure {
+    package businessSatellite{
+        class SatelliteSystemTokenAdapter {
+            + getSatelliteSystemToken(Object,String,String):Object
+        }
+
+        class BusinessSatellitePostgresRespository {
+
+            + findByBusinessIdAndSatelliteId(Number,Number):Object
+            + findByBusinessIdAndSatelliteShortName(Number,String):Object
+            + findLastOneByBusinessIdAndSatelliteId(Number,Number):Object
+            + saveTokenHistory(Object):Object
+        }
+    }
+
+    package businessConnector{
+        class PostgresRespository {
+            + findByBusinessIdAndSatelliteNameAndConnectorName():Object
+        }
+
+        class SatelliteSystemAdapter {
+            + sendRequestToSatellite(Object, String,Number,String):Object
+            + sendRequestToSatelliteWithRetry(Object, String,Number,String):Object
+            - makeHttpRequest(Object):Object
+            - restCall(Object):Object
+            - soapCall(Object):Object
+            - catchAxiosError(Object):Object
+        }
+
+        interface IHttpRestController{
+            + forwarderRequestPost():Object
+            + forwarderRequestGet():Object
+            + forwarderRequestPut():Object
+            + forwarderRequestDelete():Object
+        }
+
+        interface IHttpSoapController{
+            + forwarderRequestPost():Object
+        }
+
+        class ForwarderRestController implements IHttpRestController{
+            + forwarderRequestPost():Object
+            + forwarderRequestGet():Object
+            + forwarderRequestPut():Object
+            + forwarderRequestDelete():Object
+        }
+
+        class ForwarderSoapController implements IHttpSoapController{
+            + forwarderRequestPost():Object
+
+        }
+    }
+
+    package auth{
+
+        class OAuthClientCredentialsStrategy extends PassportStrategy{
+            + validate(String,String):Object
+        }
+
+        class JwtStrategy extends PassportStrategy{
+            + validate(Object):Object
+        }
+
+        class AuthController {
+            + generateToken(Object):Object
+            + refreshToken(Object):Object
+        }
+
+    }
+
+    package client{
+        class PostgresRespository{
+            + findClientByClientId(Object):Object
+            + save(Object):Object
+        }
+    }
+
+    package notification{
+        class NotificationListener{
+            + handleNotificationErrorEvent(Object)
+            + handleNotificationThresholdEvent(Object)
+        }
+
+        class PostgresRespository{
+            + findCurrentVersionByCode(String):Object
+
+        }
+    }
+
+    package user{
+        class PostgresRespository{
+            + findUsersByStatusAdnRoleCode(String,String):Object
+
+        }
+    }
+
+
+}
+package Application {
+
+    package businessSatellite{
+        class BusinessSatelliteService{
+            + findSatelliteToken(Number,String):Object
+            + getSatelliteSystemToken(Object):Object
+            - saveInCache(Object):Object
+        }
+    }
+
+    package businessConnector{
+
+        interface IRequestForwarderService{
+            + forwardRequest(Object):Object
+        }
+
+        class RequestForwarderService implements IRequestForwarderService{
+            + forwardRequest(Object):Object
+        }
+
+        class ForwarderRequestUseCase{
+            + execute(Object):Object
+        }
+    }
+
+    package auth{
+        class AuthService {
+            + generateToken(Object):Object
+            + verifyToken(String):Boolean
+            + refresh(String):Object
+            + validateClient(String,String):Object
+            - generateTokens(Object):Object
+        }
+
+        class TokenService{
+            + generateAccessToken(Object):Object
+            + generateRefreshToken(Object):Object
+            - validateToken(String):Boolean
+
+        }
+    }
+
+    package client {
+        class ClientService {
+            + findClientByClientId(String) :Object
+            + updateTokenClient(String,String) :Object
+
+        }
+    }
+
+    package notification{
+        class NotificationManagementService{
+            + manageErrorAlert(Object)
+            + manageThresholdDurationAlert(String)
+            - sendNotification(Object,String)
+            - findAndCompileTemplate(Object,String)
+            - compileTemplate(Object,Object)
+            - findUserEmails()
+            - getContextVariables()
+        }
+        class ErrorAlertConfigService{
+            + getAlertConfig(Object):Object
+        }
+    }
+
+    package user{
+        class UserService{
+            + findUsersByStatusAdnRoleCode(String,String):Object
+        }
+    }
+}
+package Domain {
+    package businessSatellite{
+
+        interface IBusinessSatellitePostgresRepository{
+            + findByBusinessIdAndSatelliteId(Number,Number):Object
+            + findByBusinessIdAndSatelliteShortName(Number,String):Object
+            + findLastOneByBusinessIdAndSatelliteId(Number,Number):Object
+            + saveTokenHistory(Object):Object
+        }
+        interface ISatelliteSystemTokenPort{
+            + getSatelliteSystemToken(Object,String,String):Object
+        }
+
+        interface IConfigService {
+            + resolveConfig(Object):Object
+            + saveTokenHistory(Number,String):Object
+        }
+
+        class ConfigResolverService implements IConfigService {
+            + resolveConfig():Object
+            + saveTokenHistory():Object
+            - findBusinessSatelliteInDatabase(Number,String):Object
+            - findLastTokenSatellite(Number,Number):Object
+        }
+    }
+
+    package businessConnector{
+
+        interface IBusinessConnectorRepository{
+            + findByBusinessIdAndSatelliteNameAndConnectorName(Number,String,String):Object
+        }
+
+        interface ISatelliteSystemAdapter{
+            + sendRequestToSatellite(Object, String,Number,String):Object
+            + sendRequestToSatelliteWithRetry(Object, String,Number,String):Object
+        }
+
+        interface IConfigService{
+            + resolveConfig(String,Number,String):Object
+        }
+
+        class ConfigResolverService implements IConfigService{
+            + resolveConfig(String,Number,String):Object
+            - findBusinessConectorInDatabase(String,Number,String,String):Object
+        }
+
+        interface IParameterMappingService{
+            + requestMapping(Object): Object
+            + responseMapping(Object): Object
+        }
+
+        interface IResponseHandlerService{
+            + handleResponse(object):Object
+        }
+    }
+
+    package client{
+        interface IClientRepository{
+            + findClientByClientId(Object):Object
+            + save(Object):Object
+        }
+    }
+
+    package notification{
+        interface IEmailTemplateVersionRepository{
+            + findCurrentVersionByCode(String):Object
+        }
+    }
+
+    package user{
+        interface IUserRespository{
+            + findUsersByStatusAdnRoleCode(String,String):Object
+        }
+    }
+}
+
+package Core{
+    interface IContextService{
+        + run(function)
+        + set(key: string, value: any)
+        + get<T>(String)
+        + update(String,Any)
+    }
+
+    interface ICacheService{
+        + get(String)
+        + set(String,String,Number)
+        + del(String)
+    }
+
+    interface ITraceService{
+        + message(String,String,Object)
+        + error(String,String,Object)
+        + warning(String,String,Object)
+    }
+
+    interface INotificationService{
+        +sendNotification(Object)
+    }
+
+    interface ICryptoService{
+        + cryptData(String): String
+        + compare(String, String): Boolean
+    }
+
+    interface IPersistanceAlertService{
+        + saveAlert(Object)
+    }
+}
+
+
+
+'businessSatellite Package'
+Infraestructure.businessSatellite.SatelliteSystemTokenAdapter ..|> Domain.businessSatellite.ISatelliteSystemTokenPort
+Infraestructure.businessSatellite.BusinessSatellitePostgresRespository ..|>  Domain.businessSatellite.IBusinessSatellitePostgresRepository
+Application.businessSatellite.BusinessSatelliteService ..>  Domain.businessSatellite.IConfigService
+Application.businessSatellite.BusinessSatelliteService ..> Domain.businessSatellite.ISatelliteSystemTokenPort
+Application.businessSatellite.BusinessSatelliteService ..> Core.ICacheService
+Application.businessSatellite.BusinessSatelliteService ..> Core.IContextService
+Domain.businessSatellite.ConfigResolverService ..> Core.ICacheService
+Domain.businessSatellite.ConfigResolverService ..>  Domain.businessSatellite.IBusinessSatellitePostgresRepository
+
+
+'businessConnector Package'
+Domain.businessConnector.ConfigResolverService ..> Domain.businessConnector.IBusinessConnectorRepository
+Domain.businessConnector.ConfigResolverService ..> Core.ICacheService
+Domain.businessConnector.ConfigResolverService ..> Core.ITraceService
+Infraestructure.businessConnector.PostgresRespository ..|> Domain.businessConnector.IBusinessConnectorRepository
+Infraestructure.businessConnector.SatelliteSystemAdapter ..|> Domain.businessConnector.ISatelliteSystemAdapter
+Infraestructure.businessConnector.SatelliteSystemAdapter ..> Application.businessSatellite.BusinessSatelliteService
+Infraestructure.businessConnector.SatelliteSystemAdapter ..> Core.ITraceService
+Application.businessConnector.RequestForwarderService ..> Domain.businessConnector.IParameterMappingService
+Application.businessConnector.RequestForwarderService ..> Domain.businessConnector.ISatelliteSystemAdapter
+Application.businessConnector.RequestForwarderService ..> Domain.businessConnector.IConfigService
+Application.businessConnector.RequestForwarderService ..> Core.IContextService
+Application.businessConnector.ForwarderRequestUseCase ..> Application.businessConnector.IRequestForwarderService
+Infraestructure.businessConnector.ForwarderRestController..>Application.businessConnector.ForwarderRequestUseCase
+Infraestructure.businessConnector.ForwarderSoapController..>Application.businessConnector.ForwarderRequestUseCase
+
+
+'auth Package'
+Application.auth.AuthService..> Core.ICryptoService
+Application.auth.AuthService..> Application.auth.TokenService
+Application.auth.AuthService..> Application.client.ClientService
+Infraestructure.auth.AuthController ..> Application.auth.AuthService
+
+
+'client Package'
+Application.client.ClientService ..> Domain.client.IClientRepository
+Infraestructure.client.PostgresRespository ..|> Domain.client.IClientRepository
+
+
+'notification Package'
+Infraestructure.notification.PostgresRespository  ..|> Domain.notification.IEmailTemplateVersionRepository
+Infraestructure.notification.NotificationListener ..> Application.notification.NotificationManagementService
+Application.notification.NotificationManagementService ..> Core.IPersistanceAlertService
+Application.notification.NotificationManagementService ..> Core.IContextService
+Application.notification.NotificationManagementService ..> Core.INotificationService
+Application.notification.NotificationManagementService ..> Core.ITraceService
+Application.notification.NotificationManagementService ..> Domain.notification.IEmailTemplateVersionRepository
+Application.notification.NotificationManagementService ..> Application.notification.ErrorAlertConfigService
+Application.notification.NotificationManagementService ..> Application.user.UserService
+Application.notification.ErrorAlertConfigService ..> Core.IContextService
+
+
+'user Package'
+Infraestructure.user.PostgresRespository ..|> Domain.user.IUserRespository
+Application.user.UserService ..|> Domain.user.IUserRespository
+
+@enduml

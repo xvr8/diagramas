@@ -1,0 +1,58 @@
+@startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+skinparam dpi 50
+skinparam pageSize A3
+ 
+package Api {
+      package ClientController {
+        class ClientController {
+            + GetSearch(page: int, limit: int, input: string?): IActionResult
+            + Search(request: RequestClientSearchDto, companyId: int, page: int, limit: int): IActionResult
+            + GetRecord(id: int): IActionResult
+            + GenerateFile(input: string?): IActionResult
+            + GenerateFileObject(request: RequestClientSearchDto, companyId: int): IActionResult
+            + Save(clientSave: ClientSaveDto): IActionResult
+            + Update(id: int, clientUpdate: ClientUpdateDto): IActionResult
+            + GetAll(): IActionResult
+            + TestKeyVault(keyVaultName: string, secretName: string): IActionResult
+        }
+    }
+}
+ 
+package Application {
+     package ClientApplication {
+        class ClientApplication {
+            + GetSearch(input: string?, page: int, limit: int): ResponseDTO
+            + Search(request: RequestClientSearchDto, companyId: int, page: int, limit: int): ResponseDTO
+            + GetRecord(id: int): ResponseDTO
+            + ExportFile(input: string?): ResponseDTO
+            + ExportFileObject(request: RequestClientSearchDto, companyId: int): ResponseDTO
+            + Save(clientSave: ClientSaveDto): ResponseDTO
+            + Update(id: int, clientUpdate: ClientUpdateDto): ResponseDTO
+            + GetAll(): ResponseDTO
+        }
+    }
+}
+ 
+package Repository {
+   package ClientRepository {
+        class ClientRepository {
+            + GetSearch(input: string?, page: int, limit: int): PaginacionEntity<ClientEntity>
+            + Search(request: RequestClientSearchDto, companyId: int, page: int, limit: int): PaginacionEntity<ClientEntity>
+        }
+    }
+}
+ 
+' Interfaces de Repository
+interface IRepository<T> {
+    + ObtenerPorId(id: int): T
+    + ObtenerTodos(): List<T>
+    + Crear(entidad: T): void
+    + Actualizar(entidad: T): void
+    + Eliminar(id: int): void
+}
+ 
+Api.ClientController.ClientController --> Application.ClientApplication.ClientApplication
+Application.ClientApplication.ClientApplication --> Repository.ClientRepository.ClientRepository
+ 
+@enduml

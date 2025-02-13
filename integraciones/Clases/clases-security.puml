@@ -1,0 +1,254 @@
+@startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - Security"
+skinparam dpi 50
+skinparam pageSize A3
+ 
+package Api {
+      
+ 'empezamos a agregar los controladores de seguridad
+
+    package RoleController {
+    class RoleController {
+        + GetRoleById(id: int): IActionResult
+        + DownloadReportRoles(moduleId: int, value: string): IActionResult
+        + GetRoleByField(moduleId: int, value: string, page: int, limit: int): IActionResult
+        + RegisterRole(model: RoleRegisterDto): IActionResult
+        + UpdateRole(id: int, model: RoleUpdateDto): IActionResult
+        + GetEnv(value: string): IActionResult
+    }
+}
+
+package UserController {
+    class UserController {
+        + ListofUsers(value: string?): IActionResult
+        + Login(requestLogin: RequestLoginDto): IActionResult
+        + GenerateToken(requestLogin: RequestLoginDto): IActionResult
+        + getMenu(idUser: int, idModule: int, idCompany: int): IActionResult
+        + getPasswordHash(password: string): IActionResult
+        + checkPasswordHash(password: string, passwordHash: string, passwordSalt: string): IActionResult
+        + ValidateToken(): IActionResult
+        + LoginAD(): IActionResult
+        + TestPod(url: string): ActionResult
+        + ListTrafficUsersByCompany(companyId: int): IActionResult
+    }
+}
+    package MenuController {
+        class MenuController {
+            + GetMenuByUser(idUser: int, idModule: int, idCompany: int): ActionResult
+        }
+    }
+
+
+}
+ 
+package Application {
+    
+    }   
+    'empezamos a agregar las aplicaciones de seguridad
+    package RoleApplication {
+    class RoleApplication {
+        + ExportReportRoles(moduleId: int, valueFilter: string): Task<ResponseDTO>
+        + FilterRolesByField(moduleId: int, valueFilter: string, page: int, limit: int): Task<ResponseDTO>
+        + GetRoleById(id: int): Task<RoleEntity>
+        + ValidateDuplicateByNameRole(name: string, id: int = 0): Task
+        + Save(role: RoleRegisterDto): Task<RoleEntity>
+        + Update(role: RoleEntity, update: RoleUpdateDto): RoleEntity
+    }
+}
+package UserApplication {
+    class UserApplication {
+        + ListFilter(value: string): Task<List<UserDropdownListDto>>
+        + getParamerByName(domains: List<string>): Task<List<ParametersMasterDto>>
+        + ListLimit(): Task<List<UserDropdownListDto>>
+        + ValidateUserName(userName: string): Task
+        + GetModuleCompany(idUser: int): Task<(List<CompanyRecordDto>, List<WareHouseRecordDto>, List<RoleDto>, List<ModuleDto>)>
+        + GetByListModule(): Task<List<ModuleDto>>
+        + Login(requestLogin: RequestLoginDto): Task<UserDto>
+        + ListTrafficUsersByCompany(companyId: int): Task<List<UserDropdownListDto>>
+        + ListRolesByAzureId(ids: List<string>): Task<List<RoleEntity>>
+        + GetByEmail(email: string): Task<UserDto?>
+        + GetById(id: int): Task<UserDto?>
+        + SaveAzureUser(user: UserEntity, roles: List<RoleEntity>): Task<UserDto>
+        + UpdateAzureUser(userId: int, roles: List<RoleEntity>): Task<UserDto>
+        + CheckPermissions(userId: int): Task
+    }
+}
+    package MenuApplication {
+        class MenuApplication {
+            + GetMenuByUser(idUser: int, idModule: int, idCompany: int): Task<ResponseDTO>
+        }
+    }
+    package SecurityApplication {
+        class SecurityService {
+            + JwtSecurity(configuration: JwTokenConfiguration, email: string): SecurityDto
+        }
+    }
+
+ 
+
+ 
+package Repository {
+    
+    }  
+    'empezamos a agregar los repositorios de seguridad
+    package RoleRepository {
+    interface IRoleRepository {
+        + FilterRolesByField(moduleId: int, valueFilter: string, page: int, limit: int): Task<PaginacionEntity<RoleEntity>>
+        + GetByCode(code: string): Task<RoleEntity>
+        + GetRoleById(id: int): Task<RoleEntity>
+        + List(page: int, limit: int): Task<PaginacionEntity<RoleEntity>>
+        + GetActiveRolesByUser(userId: int): Task<IEnumerable<int>>
+        + GetUserRole(userId: int, roleId: int): Task<UserRoleEntity>
+    }
+
+    class RoleRepository {
+        + FilterRolesByField(moduleId: int, valueFilter: string, page: int, limit: int): Task<PaginacionEntity<RoleEntity>>
+        + GetByCode(code: string): Task<RoleEntity>
+        + GetRoleById(id: int): Task<RoleEntity>
+        + List(page: int, limit: int): Task<PaginacionEntity<RoleEntity>>
+        + GetActiveRolesByUser(userId: int): Task<IEnumerable<int>>
+        + GetUserRole(userId: int, roleId: int): Task<UserRoleEntity>
+    }
+
+    RoleRepository ..|> IRoleRepository
+}
+package UserRepository {
+    interface IUserRepository {
+        + getParameterByName(domains: List<string>): Task<List<MasterTableEntity>>
+        + List(page: int, limit: int): Task<PaginacionEntity<UserEntity>>
+        + GetModuleCompany(idUser: int): Task<(List<CompanyEntity>, List<WareHouseEntity>, List<RoleEntity>, List<ModuleCustomEntity>)>
+        + ListTrafficUsersByCompany(companyId: int): Task<List<UserEntity>>
+        + ListRolesByAzureId(ids: List<string>): Task<List<RoleEntity>>
+        + ActiveUserRole(userId: int): Task<int>
+        + DisableUserRole(userId: int): Task<int>
+    }
+
+    class UserRepository {
+        + getParameterByName(domains: List<string>): Task<List<MasterTableEntity>>
+        + List(page: int, limit: int): Task<PaginacionEntity<UserEntity>>
+        + GetModuleCompany(idUser: int): Task<(List<CompanyEntity>, List<WareHouseEntity>, List<RoleEntity>, List<ModuleCustomEntity>)>
+        + ListTrafficUsersByCompany(companyId: int): Task<List<UserEntity>>
+        + ListRolesByAzureId(ids: List<string>): Task<List<RoleEntity>>
+        + ActiveUserRole(userId: int): Task<int>
+        + DisableUserRole(userId: int): Task<int>
+    }
+
+    UserRepository ..|> IUserRepository
+}
+
+      package MenuRepository {
+        class MenuRepository {
+            + GetMenuByUser(idUser: int, idModule: int, idCompany: int): Task<dynamic>
+        }
+    }
+    package ModuleRepository {
+        interface IModuleRepository {
+            + GetByAll(): Task<List<ModuleEntity>>
+        }
+
+        class ModuleRepository {
+            + GetByAll(): Task<List<ModuleEntity>>
+        }
+
+        ModuleRepository ..|> IModuleRepository
+    }
+
+
+package Domain {
+class RoleEntity {
+    + int Id
+    + string RoleName
+    + string Description
+    + int ModuleId
+    + string Status
+}
+
+class UserRoleEntity {
+    + int UserId
+    + int RoleId
+    + string Status
+}
+
+class PaginacionEntity<T> {
+    + List<T> Items
+    + int Pages
+    + int Total
+}
+
+class UserEntity {
+    + int Id
+    + string Name
+    + string LastName
+    + string FullName
+    + string Username
+    + string PasswordHash
+    + string PasswordSalt
+    + string Email
+    + string Phone
+    + bool IsLocked
+    + DateTime CreatedAt
+    + string Status
+}
+
+class UserDropdownListDto {
+    + int Id
+    + string Name
+}
+
+class ParametersMasterDto {
+    + string Domain
+    + string Value
+}
+
+class PaginacionEntity<T> {
+    + List<T> Items
+    + int Pages
+    + int Total
+}
+    
+class ModuleEntity {
+            + int Id
+            + string Name
+            + string BackgroundImage
+            + string Favicon
+            + bool Logistic
+        }
+    }
+
+
+
+
+ 
+' Interfaces de Repository
+interface IRepository<T> {
+    + ObtenerPorId(id: int): T
+    + ObtenerTodos(): List<T>
+    + Crear(entidad: T): void
+    + Actualizar(entidad: T): void
+    + Eliminar(id: int): void
+}
+ 
+
+ 
+'  relacion entre capas
+Api.RoleController.RoleController --> Application.RoleApplication.RoleApplication
+Application.RoleApplication.RoleApplication --> Repository.RoleRepository.IRoleRepository
+Repository.RoleRepository.RoleRepository --> Domain.RoleEntity
+Repository.RoleRepository.RoleRepository --> Domain.UserRoleEntity
+Repository.RoleRepository.RoleRepository --> Domain.PaginacionEntity
+
+Api.UserController.UserController --> Application.UserApplication.UserApplication
+Application.UserApplication.UserApplication --> Repository.UserRepository.IUserRepository
+Repository.UserRepository.UserRepository --> Domain.UserEntity
+Repository.UserRepository.UserRepository --> Domain.PaginacionEntity
+Repository.UserRepository.UserRepository --> Domain.UserDropdownListDto
+Repository.UserRepository.UserRepository --> Domain.ParametersMasterDto
+
+Api.MenuController.MenuController --> Application.MenuApplication.MenuApplication
+Application.MenuApplication.MenuApplication --> Repository.MenuRepository.MenuRepository
+
+Application.UserApplication --> Application.SecurityApplication.SecurityService
+
+Application.UserApplication --> Repository.ModuleRepository.IModuleRepository
+
+@enduml

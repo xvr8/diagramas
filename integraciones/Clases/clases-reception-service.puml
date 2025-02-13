@@ -1,0 +1,368 @@
+@startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+skinparam dpi 50
+skinparam pageSize A3
+ 
+package Api {
+    ' Inicio de controlleres
+       class LotController {
+            + Get(id: int): LotEntity
+            + GetAll(): List<LotEntity>
+            + Post(lote: LotEntity): void
+            + Put(id: int, lote: LotEntity): void
+            + Delete(id: int): void
+        }
+
+     package PileController {
+        class PileController {
+            + Get(id: int): PileEntity
+            + GetAll(): List<PileEntity>
+            + Post(pile: PileEntity): void
+            + Put(id: int, pile: PileEntity): void
+            + Delete(id: int): void
+        }
+    }
+
+    package ReweightLotController {
+        class ReweightLotController {
+            + Get(id: int): ReweightLot
+            + GetAll(): List<ReweightLot>
+            + Post(reweightLot: ReweightLot): void
+            + Put(id: int, reweightLot: ReweightLot): void
+            + Delete(id: int): void
+        }
+}
+    class TruckReceptionController {
+    + GetSearch(request: RequestSearchTruckDto): PaginacionEntity<TruckReceptionDto>
+    + GetExcel(request: RequestSearchTruckDto): byte[]
+    + GetTrucksPendingCalculation(idsTickets: List<int>): List<TruckReceptionEntity>
+    + GetPercentageh2o(): decimal
+    + GetLots(idWareHouse, idClient, idSupplierCompany, idProduct, typeOperation): List<LotReceptionDto>
+    + GetLotDetail(idLot, page, limit): PaginacionEntity<DetailTruckAssignLotDto>
+}
+
+}
+ 
+package Application {
+
+    ' Inicio de aplicaciones   
+          class LotApplication {
+            + Get(id: int): LotEntity
+            + GetAll(): List<LotEntity>
+            + Post(lote: LotEntity): void
+            + Put(id: int, lote: LotEntity): void
+            + Delete(id: int): void
+        }
+
+     package PileApplication {
+        class PileApplication {
+            + Get(id: int): PileEntity
+            + GetAll(): List<PileEntity>
+            + Post(pile: PileEntity): void
+            + Put(id: int, pile: PileEntity): void
+            + Delete(id: int): void
+        }
+    }
+
+     package ReweightLotController {
+        class ReweightLotController {
+            + Get(id: int): ReweightLot
+            + GetAll(): List<ReweightLot>
+            + Post(reweightLot: ReweightLot): void
+            + Put(id: int, reweightLot: ReweightLot): void
+            + Delete(id: int): void
+        }
+}
+
+class TruckReceptionApplication {
+    + GetSearch(request: RequestSearchTruckDto): PaginacionEntity<TruckReceptionDto>
+    + GetExcel(request: RequestSearchTruckDto): byte[]
+    + GetTrucksPendingCalculation(idsTickets: List<int>): List<TruckReceptionEntity>
+    + GetPercentageh2o(): decimal
+    + GetLots(idWareHouse, idClient, idSupplierCompany, idProduct, typeOperation): List<LotReceptionDto>
+    + GetLotDetail(idLot, page, limit): PaginacionEntity<DetailTruckAssignLotDto>
+    + CalculateDmtReferential(H2o: decimal, idsTickets: List<int>): List<TruckReceptionEntity>
+}
+
+class MasterTableApplication {
+        + GetGroup(group: string): Task<List<MasterTableDto>>
+        + GetSuppliers(idCompany: int): Task<List<ItemDto>>
+    }
+}
+package Repository {
+   
+    ' Inicio de repositorios
+   class LotRepository {
+    + GetSearch(request: RequestSearchDto, page: int, limit: int): PaginacionEntity<LotEntity>
+    + GetFreeLots(request: RequestSearchDto): PaginacionEntity<LotEntity>
+    + GetSearchPreliminary(request: RequestSearchDto): PaginacionEntity<LotEntity>
+    + GetSearchTraffic(request: RequestParametersListLotsTraffic): PaginacionEntity<ListLotsDto>
+    + GetExcel(request: RequestSearchDto): List<LotEntity>
+    + GetExcelTraffic(request: RequestParametersListLotsTraffic): List<ListLotsDto>
+    + GenerateContentExcelListLotsTraffic(request: dynamic): byte[]
+    + GenerateCodeLot(Id: int, TypeLot: string): string
+    + GenerateCodeLotCopies(Id: int, TypeLot: string, lotNumbers: string?): string
+    + GetRLotById(id: int): ReweightLotEntity
+    + LotDetailStorageOrderRepository(request: LotDetailStorageServiceRequestDto): PaginacionEntity<LotDetailStorageServiceResponseDto>
+    + ValidateDatesRangeStorageOrderService(request: LotDetailStorageServiceRequestDto): bool
+    + getReportDetailLotOrderStorageRepository(request: StorageOrderReportDto): byte[]
+    + getReportDetailLotByUnitsOrderStorageRepository(request: StorageOrderReportDto): byte[]
+    + GetSubLotsById(id: int): List<SubLotEntity>
+    + RemaneoReport(request: RemaneoReportRequestDto): dynamic
+    + RemaneoReportExcel(request: RemaneoReportRequestDto): byte[]
+    + GetSearchLotK(request: RequestSearchLotKDto): PaginacionEntity<CompositeLotListDto>
+    + GetSearchListLotToBeAssignedLotK(request: RequestSearchLotListToBeAssignedDto): List<LotEntity>
+    + GetSearchLotKExcel(request: RequestSearchLotKDto): byte[]
+    + GetCompositeLotDetail(compositeLotId: int): CompositeLotDetailDto
+    + LotMovementHistoryDetail(request: LotMovementHistoryDetailRequestDto): List<LotMovementHistoryDetailDto>
+    + CheckSplitSubLots(idLot: int): bool
+    + CheckReadonlySubLot(idSubLot: int): bool
+    + GetLotsByIds(idsLots: List<int>): List<LotEntity>
+}
+
+    class PileRepository {
+            + GetSearch(request: RequestPileSearchDto, warehouseId: int, page: int, limit: int): PaginacionEntity<PileEntity>
+            + GetExcel(request: RequestPileSearchDto, warehouseId: int): List<PileEntity>
+            + GetCorrelative(warehouseId: int): int
+            + GetPileForLot(warehouseId: int, idClient: int, idStockGroup: int, typePile: string): List<PileEntity>
+            + GetListOrderToSplitPile(idPile: int): List<dynamic>
+            + GetListShipmentInstructionByIdPile(idPile: int): List<dynamic>
+            + GetDmtAndWmtOnlyLotAssignByIdPile(idPile: int): dynamic
+            + GetDataStorageOrderById(idOrderService: int): dynamic
+            + GetDataShipmentInstructionById(idShipmentInstruction: int): dynamic
+            + GetLotsByShipmentInstructionIds(id: int): List<LotEntity>
+            + GetLotsByIds(ids: List<int>): List<LotEntity>
+            + GetSubLotsByIds(ids: List<int>): List<SubLotEntity>
+            + GetPileByIdIncludeLotAndTruck(idPile: int): PileEntity
+            + GetLotsByIdPile(idPile: int): List<LotEntity>
+            + PileIsClosed(id: int): bool
+            + PileHasReweightLotsInDestination(id: int): bool
+            + PileHasBeenSplit(id: int): bool
+            + PileIsInShipmentInstruction(id: int): bool
+            + GetServiceOrderById(idOrderService: int): ServiceOrderEntity
+            + GetShipmentInstructionById(idShipmentInstruction: int): ShipmentInstructionEntity
+            + PileHasReweightLotOpen(idPile: int): bool
+            + GetHeaderDetailsByIdPile(idPile: int): dynamic
+            + ExportDetails(idPile: int): byte[]
+            + GetDetailsByIdPile(idPile: int, limit: int, page: int): PaginacionEntity<dynamic>
+            + CheckSplit(idPile: int): bool
+        }
+
+         class ReweightLotRepository {
+            + Get(id: int): ReweightLot
+            + GetAll(): List<ReweightLot>
+            + Post(reweightLot: ReweightLot): void
+            + Put(id: int, reweightLot: ReweightLot): void
+            + Delete(id: int): void
+        }
+        class TruckReceptionRepository {
+    + GetSearch(request: RequestSearchTruckDto): PaginacionEntity<TruckReceptionEntity>
+    + GetExcel(request: RequestSearchTruckDto): byte[]
+    + GetTrucksPendingCalculation(idsTickets: List<int>): List<TruckReceptionEntity>
+    + GetPercentageh2o(): decimal
+    + GetLots(idWareHouse, idClient, idSupplierCompany, idProduct, typeOperation): List<LotReceptionDto>
+    + GetLotDetail(idLot, page, limit): PaginacionEntity<DetailTruckAssignLotEntity>
+}
+
+ class MasterTableRepository {
+        + GetIdCompanyByRuc(ruc: string): Task<int>
+    }
+
+ interface IMasterTableRepository {
+        + GetIdCompanyByRuc(ruc: string): Task<int>
+    }
+
+    MasterTableRepository --|> IMasterTableRepository
+    MasterTableRepository --|> BaseRepository
+    MasterTableRepository --> DataContext
+
+  class PurchaseSaleContractRepository {
+        + GetPurchaseContractForCompositeLot(supplierCompanyId: int, idCompanyClient: int, stockGroupId: int): Task<List<PurchaseSaleContractEntity>>
+        + GetPurchaseContractQuotaForCompositeLot(purchaseContractId: int): Task<List<PurchaseSaleContractQuotaEntity>>
+    }
+
+      class SubLotRepository {
+        + GetByIds(ids: List<int>): Task<IEnumerable<SubLotEntity>>
+    }
+
+     class SupplierRepository {
+        + GetSuppliersByCompany(idCompany: int): Task<IEnumerable<SupplierEntity>>
+    }
+
+      class SupplierRepository {
+        + GetSuppliersByCompany(idCompany: int): Task<IEnumerable<SupplierEntity>>
+    }
+}
+
+ 
+' Interfaces de Repository
+class PileEntity {
+    + int Id
+    + string PileNumber
+    + string Description
+    + int IdWarehouse
+    + int IdClient
+    + int IdStockGroup
+    + List<LotEntity> LotEntities
+    + List<SubLotEntity> SubLotEntities
+}
+class RequestPileSearchDto
+class PaginacionEntity<T> {
+    + List<T> Items
+    + int Pages
+    + int Total
+}
+class LotEntity {
+    + int Id
+    + string Number
+    + decimal LotSizeDMT
+    + decimal SizeWMT
+    + int ShipmentInstructionId
+}
+class SubLotEntity {
+    + int Id
+    + decimal DMT
+    + decimal WMT
+}
+class ServiceOrderEntity {
+    + int Id
+    + string OrderNumber
+    + int PileIdSplit
+}
+class ShipmentInstructionEntity {
+    + int Id
+    + string Number
+    + int PileId
+}
+class LotEntity {
+    + int Id
+    + string Number
+    + decimal LotSizeDMT
+    + decimal SizeWMT
+    + int ShipmentInstructionId
+    + int IdClient
+    + int IdStockGroup
+    + int IdWarehouse
+    + List<SubLotEntity> SubLotEntities
+}
+
+class RequestLotSearchDto
+class PaginacionEntity<T> {
+    + List<T> Items
+    + int Pages
+    + int Total
+}
+
+class SubLotEntity {
+    + int Id
+    + decimal DMT
+    + decimal WMT
+    + int LotId
+}
+
+class ServiceOrderEntity {
+    + int Id
+    + string OrderNumber
+    + int LotIdSplit
+}
+
+class ShipmentInstructionEntity {
+    + int Id
+    + string Number
+    + int LotId
+}
+
+' Interfaces de Repository
+interface IRepository<T> {
+    + ObtenerPorId(id: int): T
+    + ObtenerTodos(): List<T>
+    + Crear(entidad: T): void
+    + Actualizar(entidad: T): void
+    + Eliminar(id: int): void
+}
+  class IUnitOfWork {
+        + Repository<T>()
+    }
+
+    class DataContext {
+        // Database context
+    }
+
+    class MasterTableEntity {
+        // Entity properties
+    }
+
+    class SupplierEntity {
+        // Entity properties
+    }
+
+    interface ISupplierRepository {
+        + GetSuppliersByCompany(idCompany: int): Task<List<SupplierEntity>>
+    }
+
+    class IMapper {
+        + Map<T>(source)
+    }
+ 
+
+ 
+ ' Inicio de relaciones
+LotController --> LotApplicationService
+LotApplicationService --> LotRepository
+
+Api.PileController.PileController --> Application.PileApplication.PileApplication
+Application.PileApplication.PileApplication --> Repository.PileRepository.PileRepository
+Repository.PileRepository.PileRepository --> PileEntity : maneja
+Repository.PileRepository.PileRepository --> LotEntity : obtiene
+Repository.PileRepository.PileRepository --> SubLotEntity : obtiene
+Repository.PileRepository.PileRepository --> ServiceOrderEntity : obtiene
+Repository.PileRepository.PileRepository --> ShipmentInstructionEntity : obtiene
+
+PileEntity --> LotEntity : contiene *
+PileEntity --> SubLotEntity : contiene *
+LotEntity --> ShipmentInstructionEntity : pertenece
+ShipmentInstructionEntity --> ServiceOrderEntity : genera
+
+LotController --> LotApplicationService
+LotApplicationService --> LotRepository
+Repository.LotRepository --> LotEntity : maneja
+Repository.LotRepository --> SubLotEntity : obtiene
+Repository.LotRepository --> ServiceOrderEntity : obtiene
+Repository.LotRepository --> ShipmentInstructionEntity : obtiene
+
+LotEntity --> SubLotEntity : contiene *
+LotEntity --> ShipmentInstructionEntity : pertenece
+ShipmentInstructionEntity --> ServiceOrderEntity : genera
+
+Api.ReweightLotController.ReweightLotController --> Application.ReweightLotApplication.ReweightLotApplication
+Application.ReweightLotApplication.ReweightLotApplication --> Repository.ReweightLotRepository.ReweightLotRepository
+Repository.ReweightLotRepository.ReweightLotRepository --> ReweightLotEntity : maneja
+Repository.ReweightLotRepository.ReweightLotRepository --> LotEntity : obtiene
+Repository.ReweightLotRepository.ReweightLotRepository --> SubLotEntity : obtiene
+Repository.ReweightLotRepository.ReweightLotRepository --> ServiceOrderEntity : obtiene
+Repository.ReweightLotRepository.ReweightLotRepository --> ShipmentInstructionEntity : obtiene
+
+ReweightLotEntity --> LotEntity : pertenece
+LotEntity --> SubLotEntity : contiene *
+LotEntity --> ShipmentInstructionEntity : pertenece
+ShipmentInstructionEntity --> ServiceOrderEntity : genera
+
+TruckReceptionController --> TruckReceptionApplication : calls
+TruckReceptionApplication --> TruckReceptionRepository : calls
+
+MasterTableApplication --> IUnitOfWork : obtiene instancia de
+MasterTableApplication --> IMasterTableRepository : accede a repositorio
+MasterTableApplication --> ISupplierRepository : accede a proveedor
+MasterTableApplication --> IMapper : mapea datos
+MasterTableRepository --> DataContext : maneja datos
+MasterTableRepository --|> BaseRepository : extiende base
+IMasterTableRepository <|-- MasterTableRepository
+IMasterTableApplication <|-- MasterTableApplication
+
+PurchaseSaleContractRepository --|> IPurchaseSaleContractRepository
+
+SubLotRepository --|> ISubLotRepository
+
+SupplierRepository --> SupplierEntity
+SupplierRepository --> SupplierCompanyEntity
+@enduml
