@@ -1,0 +1,94 @@
+@startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+skinparam dpi 50
+skinparam pageSize A3
+ 
+package Api {
+    package PurchaseSaleContractController {
+        class PurchaseSaleContractController {
+            + Save(model: PurchaseSaleContractFileDto): IActionResult
+            + Update(id: int, model: PurchaseSaleContractFileDto): IActionResult
+            + GetCustomSearch(idCompany: int, page: int, limit: int, searchDto: PurchaseSaleContractCustomSearchDto): IActionResult
+            + GenerateFile(idCompany: int, searchDto: PurchaseSaleContractCustomSearchDto): IActionResult
+            + DownloadAttachedFile(id: int): IActionResult
+            + GetRegistration(id: int): IActionResult
+            + ValidateStatus(id: int): IActionResult
+            + GetSearchForLot(supplierCompanyCode: int, clientCode: int, productId: int): IActionResult
+            + ListProductByStockGroup(id: int): IActionResult
+            + ListQuotas(purchaseSaleContractId: int): IActionResult
+        }
+    }  
+}
+ 
+package Application {
+    package PurchaseSaleContractApplication {
+        class PurchaseSaleContractApplication {
+            + GetCustomSearch(searchDto: PurchaseSaleContractCustomSearchDto, idCompany: int, page: int, limit: int): ResponseDTO
+            + GetAll(idCompany: int, searchDto: PurchaseSaleContractCustomSearchDto): IEnumerable<PurchaseSaleContractEntity>
+            + ExportFile(records: IEnumerable<PurchaseSaleContractEntity>, laboratory: ResponseDTO, quality: ResponseDTO): FormatoDto
+            + GetRegistration(id: int): ResponseDTO
+            + Save(contractSave: PurchaseSaleContractSaveDto): ResponseDTO
+            + Update(id: int, contractUpdate: PurchaseSaleContractUpdateDto): ResponseDTO
+            + ValidateStatus(id: int): string
+            + UploadFile(pathFile: string, file: byte[]): bool
+            + DeleteFile(pathFile: string): bool
+            + GetSearchForLot(supplierCompanyCode: int, clientCode: int, productId: int): ResponseDTO
+            + ListProductByStockGroup(stockGroupId: int): ResponseDTO
+            + GetQuotas(purchaseSaleContractId: int): ResponseDTO
+        }
+    }
+     package LaboratoryApplication {
+        class LaboratoryApplication {
+            + GetAll(): ResponseDTO
+        }
+    }
+
+    package QualityApplication {
+        class QualityApplication {
+            + GetAll(): ResponseDTO
+        }
+    }
+}
+ 
+package Repository {
+    package PurchaseSaleContractRepository {
+        class PurchaseSaleContractRepository {
+            + GetPurchaseSaleContractById(id: int): PurchaseSaleContractEntity
+            + GetSearch(searchDto: PurchaseSaleContractCustomSearchDto, idCompany: int, page: int, limit: int, all: bool): PurchaseSaleContractResultDto
+            + GetSearchForLot(supplierCompanyCode: int, clientCode: int, productCode: int): PurchaseSaleContractResultDto
+            + GetCustomSearch(searchDto: PurchaseSaleContractCustomSearchDto, idCompany: int, page: int, limit: int): PaginacionEntity<PurchaseSaleContractEntity>
+            + GetMaxCorrelativeByYear(companyId: int, contractCode: int?): string
+            + ExportFile(idCompany: int, searchDto: PurchaseSaleContractCustomSearchDto): IEnumerable<PurchaseSaleContractEntity>
+            + ListProductByStockGroup(stockGroupId: int): List<ProductEntity>
+            + GetQuotas(purchaseSaleContractId: int): IEnumerable<PurchaseSaleContractQuotaEntity>
+        }
+    }   
+
+     package LaboratoryRepository {
+        class LaboratoryRepository {
+            + GetAll(): IEnumerable<LaboratoryEntity>
+            + GetLaboratoriesByCompany(idCompany: int): IEnumerable<LaboratoryEntity>
+        }
+    }
+
+     package QualityRepository {
+        class QualityRepository {
+            + GetAll(): IEnumerable<QualityEntity>
+        }
+    }
+}
+ 
+' Interfaces de Repository
+interface IRepository<T> {
+    + ObtenerPorId(id: int): T
+    + ObtenerTodos(): List<T>
+    + Crear(entidad: T): void
+    + Actualizar(entidad: T): void
+    + Eliminar(id: int): void
+}
+ 
+Api.PurchaseSaleContractController.PurchaseSaleContractController --> Application.PurchaseSaleContractApplication.PurchaseSaleContractApplication
+Application.PurchaseSaleContractApplication.PurchaseSaleContractApplication --> Repository.PurchaseSaleContractRepository.PurchaseSaleContractRepository
+ 
+Application.LaboratoryApplication.LaboratoryApplication --> Repository.LaboratoryRepository.LaboratoryRepository 
+@enduml
