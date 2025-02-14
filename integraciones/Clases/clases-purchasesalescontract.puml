@@ -1,5 +1,5 @@
 @startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
-title "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - purchasesalescontract"
 skinparam dpi 50
 skinparam pageSize A3
  
@@ -91,4 +91,6 @@ Api.PurchaseSaleContractController.PurchaseSaleContractController --> Applicatio
 Application.PurchaseSaleContractApplication.PurchaseSaleContractApplication --> Repository.PurchaseSaleContractRepository.PurchaseSaleContractRepository
  
 Application.LaboratoryApplication.LaboratoryApplication --> Repository.LaboratoryRepository.LaboratoryRepository 
+
+Application.QualityApplication.QualityApplication --> Repository.QualityRepository.QualityRepository
 @enduml

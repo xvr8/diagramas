@@ -1,0 +1,105 @@
+@startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - Order-Service"
+skinparam dpi 50
+skinparam pageSize A3
+ 
+package Api {
+     package BlendingOrderController {
+        class BlendingOrderController {
+            + Save(request: BlendingOrderDto): IActionResult
+            + GetServicesByIdContract(id: int): IActionResult
+            + CancellledPileById(id: int, user: string): IActionResult
+            + GetReportBlendComposition(id: int): IActionResult
+            + GetReportServiceComposition(id: int): IActionResult
+            + GetBlendingOrderById(id: int): IActionResult
+            + GetContractServByIdClient(warehouseId: int, id: int): IActionResult
+        }
+    }  
+ package ServiceOrderController {
+        class ServiceOrderController {
+            + GetSearch(request: RequestSearchDto): IActionResult
+            + GetContractServByIdClient(warehouseId: int, id: int): IActionResult
+            + GetServiceOrderById(id: int): IActionResult
+            + GetServicesByIdContract(id: int): IActionResult
+            + GetPilesByFilter(WarehouseId: int, Limit: int, Page: int, idClient: int, idStockGroup: int, state: int, pileNumber?: string, pileType?: string, pileProduct?: string, pileIsNot?: int, showZero: bool): IActionResult
+            + GetPileById(id: int): IActionResult
+            + DonwloadReport(searchDto: RequestSearchDto): IActionResult
+            + SaveServiceOrder(json: string): IActionResult
+            + SaveServiceOrderStorage(request: CreateServiceOrderStorageRequestDto): IActionResult
+            + UpdateServiceOrderStorage(request: UpdateServiceOrderStorageRequestDto): IActionResult
+            + ListStockGroupByContract(id: int): IActionResult
+            + GetReweightReport(id: int): IActionResult
+            + GetReweightReportExcel(id: int): IActionResult
+        }
+    }   
+
+    
+}
+ 
+package Application {
+    package BlendingOrderApplication {
+        class BlendingOrderApplication {
+            + GetReportServiceComposition(id: int): byte[]
+            + GetBlendingOrderById(id: int): BlendingOrderDto
+            + GetContractServByIdClient(warehouseId: int, id: int): List<dynamic>
+            + CancellledPileById(idPile: int, user: string): dynamic
+        }
+    }   
+package ReweightLotApplication {
+        class ReweightLotApplication {
+            + GenerateBaseLotEntity(serviceOrder: ServiceOrderEntity, reweightOrderDetail: DetailServiceOrderEntity): LotEntity
+        }
+    }
+    
+}
+ 
+package Repository {
+    package BlendingOrderRepository {
+        class BlendingOrderRepository {
+            + GetServicesByIdContract(id: int): List<dynamic>
+            + GetReportBlendComposition(id: int): byte[]
+            + GetReportServiceComposition(id: int): byte[]
+            + GetBlendingOrderById(id: int): BlendingOrderEntity
+            + GetContractServByIdClient(warehouseId: int, id: int): List<dynamic>
+        }
+    }
+
+   package ServiceOrderRepository {
+        class ServiceOrderRepository {
+            + GetSearch(request: RequestParametersServiceOrder): PaginacionEntity<dynamic>
+            + GetContractServByIdClient(warehouseId: int, id: int): List<dynamic>
+            + GetServiceOrderById(id: int): ServiceOrderEntity
+            + GetServicesByIdContract(id: int): List<dynamic>
+            + GetPilesByFilter(WarehouseId: int, Limit: int, Page: int, idClient: int, idStockGroup: int, state: int, pileNumber?: string, pileType?: string, pileProduct?: string, pileIsNot?: int, showZero: bool): PaginacionEntity<dynamic>
+            + GetPileById(id: int): dynamic
+            + ListStockGroupByContract(ContractId: int): List<StockGroupEntity>
+        }
+    }
+
+    package ReweightLotRepository {
+        class ReweightLotRepository {
+            + GenerateCode(warehouseId: int): string
+        }
+    }
+}
+ 
+' Interfaces de Repository
+interface IRepository<T> {
+    + ObtenerPorId(id: int): T
+    + ObtenerTodos(): List<T>
+    + Crear(entidad: T): void
+    + Actualizar(entidad: T): void
+    + Eliminar(id: int): void
+}
+ 
+Api.BlendingOrderController.BlendingOrderController --> Application.BlendingOrderApplication.BlendingOrderApplication
+Application.BlendingOrderApplication.BlendingOrderApplication --> Repository.BlendingOrderRepository.BlendingOrderRepository
+ 
+Api.ServiceOrderController.ServiceOrderController --> Application.ServiceOrderApplication.ServiceOrderApplication
+Application.ServiceOrderApplication.ServiceOrderApplication --> Repository.ServiceOrderRepository.ServiceOrderRepository
+
+Application.ReweightLotApplication.ReweightLotApplication --> Repository.ReweightLotRepository.ReweightLotRepository
+
+ 
+@enduml
+ 

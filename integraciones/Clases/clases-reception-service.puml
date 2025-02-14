@@ -1,5 +1,5 @@
 @startuml "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
-title "Diagrama de Clases - Arquitectura .NET Core con AD Auth"
+title "Diagrama de Clases - Reception Service"
 skinparam dpi 50
 skinparam pageSize A3
  

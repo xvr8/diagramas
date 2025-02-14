@@ -1,0 +1,371 @@
+@startuml "Diagrama de Clases - ixm library"
+title "Diagrama de Clases - IXM Library"
+skinparam dpi 50
+skinparam pageSize A3
+
+package Dto {
+    class MasterTableDto {
+        + Id: int
+        + Domain: string
+        + Name: string
+        + Description: string
+        + Value: string
+        + Order: int?
+    }
+}
+ package ResponseDTO {
+        class ResponseDTO {
+            + transactionId: string
+            + status: int
+            + success: bool
+            + data: dynamic
+        }
+        
+    class MasterTableDomainDto {
+        + Domain: string
+        + Items: List<ItemDto>
+    }
+    
+    }
+
+    package Configurations {
+    class AppSettings {
+        + DatabaseConfiguration: DatabaseConfiguration
+        + JWTokenConfiguration: JwTokenConfiguration
+        + AzureBlobStorageConfiguration: AzureBlobStorageConfiguration
+        + AzureEmailConfiguration: AzureEmailConfiguration
+        + NexusConfiguration: NexusConfiguration
+        + CacheConfiguration: CacheConfiguration
+    }
+    
+    class DatabaseConfiguration {}
+    class JwTokenConfiguration {}
+    class AzureBlobStorageConfiguration {}
+    class AzureEmailConfiguration {}
+    class NexusConfiguration {}
+    class CacheConfiguration {}
+     class CacheConfiguration {
+        + Enabled: bool
+        + ConnectionString: string
+    }
+
+    class AppSettings {
+        + DatabaseConfiguration: DatabaseConfiguration
+        + JWTokenConfiguration: JwTokenConfiguration
+        + AzureBlobStorageConfiguration: AzureBlobStorageConfiguration
+        + AzureEmailConfiguration: AzureEmailConfiguration
+        + NexusConfiguration: NexusConfiguration
+        + CacheConfiguration: CacheConfiguration
+    }
+     class JwTokenConfiguration {
+        + Secret: string
+        + ExpirationTimeHours: long
+        + Iss: string
+        + Aud: string
+        + Credentials: CredentialConfiguration
+    }
+
+    class DatabaseConfiguration {
+        + ConnectionString: string
+        + DatabaseName: string
+    }
+ class AzureEmailConfiguration {
+        + ConnectionString: string
+        + SenderAddress: string
+    }
+    class NexusConfiguration {}
+    class CacheConfiguration {}
+
+     class NexusConfiguration {
+        + Portal: Portal
+        + Services: Services
+        + Storage: Storage
+    }
+class ParameterConfiguration {
+        + Group: string
+        + Id: string
+        + Name: string
+    }
+class ResourceConfiguration {
+        + NexusConfiguration: NexusConfiguration
+        + CacheConfiguration: CacheConfiguration
+    }
+ class EntityConfiguration<T> {
+        + Configure(builder: EntityTypeBuilder<T>): void
+    }
+    class DetailBlendingOrderOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+     class BlendingOrderOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    
+    class DetailBlendingOrderOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    
+    class DetailBlendingServiceOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+     class DetailPreBlendOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    class DetailServiceOrderOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+     class DetailServiceOrderOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+     class DetailThirdPartyContractOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    class ServiceOrderOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    class ThirdPartyContractOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    class AnalysisInstructionOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    class DailyClosureOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    class DetailDailyClosureOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    class DetailDispatchInstructionOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+     class DispatchInstructionOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+    class ShipmentInstructionOriginConfiguration<T> {
+        + Configuration(builder: ModelBuilder): EntityTypeBuilder<T>
+    }
+
+}
+
+package Commons {
+    class Entity {
+        + Id: int
+        + CreatedBy: string
+        + CreatedAt: DateTime
+        + UpdatedBy: string?
+        + UpdatedAt: DateTime?
+        + Status: string
+    }
+    class Entity {
+        + Id: int
+        + CreatedBy: string
+        + CreatedAt: DateTime
+        + UpdatedBy: string?
+        + UpdatedAt: DateTime?
+        + Status: string
+    }
+     class ItemDto {
+        + Id: string
+        + Name: string
+        + Order: int
+        + AltId: string
+        + IdStockGroup: int
+        + IdSupplier: int
+        + Type: string
+        + PileProduct: string
+    }
+}
+
+package Models {
+    class BlendingOrderModel {
+        + BlendingOrderNumber: string
+        + CancellationReason: string
+        + ClientId: int
+        + ContractServiceId: int
+        + InitialDate: DateOnly
+        + FinalDate: DateOnly
+        + EstimatedBlendWMT: decimal
+        + BlendingOrderState: string
+        + TotalServiceWMT: decimal
+        + TotalServiceMount: decimal
+        + IdWareHouse: int
+        + CustomerReference: string
+    }
+     class Entity {
+        + Id: int
+        + CreatedBy: string
+        + CreatedAt: DateTime
+        + UpdatedBy: string
+        + UpdatedAt: DateTime
+        + Status: string
+    }
+    class DetailBlendingOrderModel {
+        + PileIdPreBlend: int?
+        + BlendingOrderId: int
+        + ServiceOrderId: int?
+        + TypeStep: int
+        + OrderStep: int
+    }
+     class DetailBlendingServiceModel {
+        + PileId: int
+        + ServiceId: int
+        + DetailBlendingOrderId: int
+        + DetailContractServiceId: int
+    }
+    class DetailBlendingServiceModel {
+        + PileId: int
+        + ServiceId: int
+        + DetailBlendingOrderId: int
+        + DetailContractServiceId: int
+    }
+    class DetailPreBlendModel {
+        + PileId: int
+        + DetailBlendingOrderId: int
+    }
+    class DetailServiceOrderModel {
+        + PileId: int?
+        + ServiceOrderId: int
+        + DetailContractServiceId: int
+        + PartialWeight: bool?
+        + WmtExecute: decimal?
+        + PercentageExecute: decimal?
+        + Units: int?
+        + EventDescription: string
+        + Fee: decimal?
+        + SubTotal: decimal?
+        + OrderType: string
+        + OriginPileId: int?
+        + LotSizeWMT: decimal?
+        + PlannedWMT: decimal?
+        + PlannedSubtotal: decimal?
+    }
+     class DetailStorageOrderServiceModel {
+        + OrderServiceId: int
+        + ServiceId: int?
+        + InitialDate: DateTime?
+        + FinalDate: DateTime?
+        + WmtToExecute: decimal?
+        + IdMeasurementUnit: int?
+        + IdCurrency: int?
+        + Fee: decimal?
+        + Total: decimal?
+    }
+     class DetailThirdPartyContractModel {
+        + ThirdPartyContractId: int
+        + QualityId: int
+        + Quality: string
+    }
+     class ServiceOrderModel {
+        + OrderNumber: string
+        + Remarks: string?
+        + CancellationReason: string?
+        + ClientId: int
+        + ContractServiceId: int
+        + StockGroupId: int
+        + InitialDate: DateOnly
+        + CloseDate: DateOnly?
+        + InvoiceDate: DateOnly?
+        + OrderState: string
+        + Total: decimal?
+        + IdWareHouse: int?
+        + CompanyId: int?
+        + TypeServiceOrder: string?
+        + PileIdSplit: int?
+        + TypeCalculationSplitPile: int?
+        + FactorTMS: decimal?
+    }
+    class ThirdPartyContractModel {
+        + ExternalClientId: int?
+        + ClientId: int?
+        + ProductId: int?
+        + CompanyId: int?
+        + WarehouseId: int?
+        + StockGroupId: int?
+        + TonnageUnit: string?
+        + ContractCode: string
+        + ContractType: int
+        + ContractState: int
+        + CancellationReason: string?
+        + SamplingDescription: string?
+        + Correlative: int
+        + InitialDate: DateTime?
+        + FinalDate: DateTime?
+        + CloseDate: DateTime?
+    }
+    class BlendingOrderModel {
+        + Id: int
+        + ClientId: int
+        + ContractServiceId: int
+        + BlendingOrderNumber: string
+        + InitialDate: DateOnly?
+        + FinalDate: DateOnly?
+        + CancellationReason: string?
+        + EstimatedBlendWMT: decimal?
+        + TotalServiceWMT: decimal?
+        + TotalServiceMount: decimal?
+        + CustomerReference: string
+        + BlendingOrderState: string
+        + IdWareHouse: int?
+        + CreatedAt: DateTime
+        + UpdatedAt: DateTime?
+        + CreatedBy: string
+        + UpdatedBy: string?
+        + Status: string
+    }
+    class DetailBlendingOrderModel {
+        + PileIdPreBlend: int
+        + BlendingOrderId: int
+        + ServiceOrderId: int
+        + TypeStep: int
+        + OrderStep: int
+        + CreatedAt: DateTime
+        + UpdatedAt: DateTime
+        + CreatedBy: string
+        + UpdatedBy: string
+        + Status: string
+    }
+
+    
+ }
+
+Configurations.AppSettings --> Configurations.DatabaseConfiguration
+Configurations.AppSettings --> Configurations.JwTokenConfiguration
+Configurations.AppSettings --> Configurations.AzureBlobStorageConfiguration
+Configurations.AppSettings --> Configurations.AzureEmailConfiguration
+Configurations.AppSettings --> Configurations.NexusConfiguration
+Configurations.AppSettings --> Configurations.CacheConfiguration
+
+Configurations.NexusConfiguration --> Configurations.Portal
+Configurations.NexusConfiguration --> Configurations.Services
+Configurations.NexusConfiguration --> Configurations.Storage
+
+Configurations.AppSettings --> Configurations.ParameterConfiguration
+Configurations.AppSettings --> Configurations.ResourceConfiguration
+
+Models.BlendingOrderModel --|> Models.Entity
+ContractModels.DetailBlendingOrderModel --|> ContractModels.Entity
+ContractModels.DetailPreBlendModel --|> ContractModels.Entity
+ContractModels.DetailServiceOrderModel --|> ContractModels.Entity
+ContractModels.DetailStorageOrderServiceModel --|> ContractModels.Entity
+ContractModels.DetailThirdPartyContractModel --|> ContractModels.Entity
+ContractModels.ServiceOrderModel --|> ContractModels.Entity
+ContractModels.ThirdPartyContractModel --|> ContractModels.Entity
+
+InfrastructureConfigurations.EntityConfiguration <|-- InfrastructureConfigurations.IEntityTypeConfiguration
+
+ContractConfigurations.BlendingOrderOriginConfiguration --> ContractConfigurations.BlendingOrderModel
+InfrastructureConfigurations.DetailBlendingOrderOriginConfiguration "uses" --> DomainModels.DetailBlendingOrderModel
+InfrastructureConfigurations.DetailBlendingOrderOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.DetailBlendingServiceOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.DetailPreBlendOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.DetailServiceOrderOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.DetailServiceOrderOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.DetailThirdPartyContractOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.ServiceOrderOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.ThirdPartyContractOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.AnalysisInstructionOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.DailyClosureOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.DetailDailyClosureOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.DetailDispatchInstructionOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.DispatchInstructionOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+InfrastructureConfigurations.ShipmentInstructionOriginConfiguration <|-- InfrastructureConfigurations.EntityConfiguration
+@enduml
